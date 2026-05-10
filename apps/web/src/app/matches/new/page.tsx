@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
 import { createMatch } from '@/lib/api/matches'
 import { getPlayers } from '@/lib/api/players'
-import { Player, Sport } from '@tennis-rank/shared'
+import { Player, Sport } from '@rank-app/shared'
 import { Header } from '@/components/layout/header'
 
 export default function NewMatchPage() {
@@ -85,7 +85,7 @@ export default function NewMatchPage() {
               required
               value={form.sport}
               onChange={(e) => setForm((f) => ({ ...f, sport: e.target.value as Sport }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               {SPORT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -99,7 +99,7 @@ export default function NewMatchPage() {
               required
               value={form.opponentId}
               onChange={(e) => setForm((f) => ({ ...f, opponentId: e.target.value, winnerId: '' }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               <option value="">Selecionar adversário...</option>
               {players.map((p) => (
@@ -117,7 +117,7 @@ export default function NewMatchPage() {
               value={form.winnerId}
               onChange={(e) => setForm((f) => ({ ...f, winnerId: e.target.value }))}
               disabled={!form.opponentId}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-50"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand disabled:bg-gray-50"
             >
               <option value="">Selecionar vencedor...</option>
               {player && <option value={player._id}>{player.name} (Eu)</option>}
@@ -137,7 +137,7 @@ export default function NewMatchPage() {
               placeholder="6-3 6-4"
               value={form.score}
               onChange={(e) => setForm((f) => ({ ...f, score: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
 
@@ -149,7 +149,7 @@ export default function NewMatchPage() {
               value={form.date}
               max={new Date().toISOString().split('T')[0]}
               onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
 
@@ -158,7 +158,7 @@ export default function NewMatchPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-green-600 text-white rounded-lg py-2.5 font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+            className="w-full bg-brand text-white rounded-lg py-2.5 font-medium hover:bg-brand-dark disabled:opacity-50 transition-colors"
           >
             {loading ? 'Registrando...' : 'Registrar resultado'}
           </button>

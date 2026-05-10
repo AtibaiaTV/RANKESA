@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
 import { getMatches, confirmMatch, disputeMatch } from '@/lib/api/matches'
 import { getMyBets } from '@/lib/api/bets'
-import { Bet, BetStatus, Match, MatchStatus } from '@tennis-rank/shared'
+import { Bet, BetStatus, Match, MatchStatus } from '@rank-app/shared'
 import { Header } from '@/components/layout/header'
 
 export default function DashboardPage() {
@@ -70,7 +70,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-bold text-gray-900">Meu Painel</h1>
           <Link
             href="/matches/new"
-            className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+            className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-dark"
           >
             + Registrar partida
           </Link>
@@ -80,7 +80,7 @@ export default function DashboardPage() {
           <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
             <div className="grid grid-cols-4 gap-3 text-center">
               <div>
-                <p className="text-3xl font-bold text-green-600">{player.elo}</p>
+                <p className="text-3xl font-bold text-brand">{player.elo}</p>
                 <p className="text-xs text-gray-500 mt-1">ELO</p>
               </div>
               <div>
@@ -127,7 +127,7 @@ export default function DashboardPage() {
                     <div className="flex gap-2 mt-3">
                       <button
                         onClick={() => handleConfirm(m._id)}
-                        className="flex-1 bg-green-600 text-white text-sm py-1.5 rounded-lg hover:bg-green-700"
+                        className="flex-1 bg-brand text-white text-sm py-1.5 rounded-lg hover:bg-brand-dark"
                       >
                         Confirmar
                       </button>

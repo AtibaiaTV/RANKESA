@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getPlayers } from '@/lib/api/players'
 import { Header } from '@/components/layout/header'
-import { PlayerLevel } from '@tennis-rank/shared'
+import { PlayerLevel } from '@rank-app/shared'
 
 const LEVEL_LABELS: Record<PlayerLevel, string> = {
   [PlayerLevel.BEGINNER]: 'Iniciante',
@@ -40,8 +40,8 @@ export default async function RankingPage({
                 href={`/ranking${lvl ? `?level=${lvl}` : ''}`}
                 className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
                   params.level === lvl || (!params.level && !lvl)
-                    ? 'bg-green-600 text-white border-green-600'
-                    : 'border-gray-300 text-gray-600 hover:border-green-400'
+                    ? 'bg-brand text-white border-brand'
+                    : 'border-gray-300 text-gray-600 hover:border-brand'
                 }`}
               >
                 {lvl ? LEVEL_LABELS[lvl] : 'Todos'}
@@ -60,7 +60,7 @@ export default async function RankingPage({
               <span className="w-8 text-center font-bold text-gray-400 text-sm">
                 {(page - 1) * 20 + index + 1}
               </span>
-              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center font-semibold text-green-700 flex-shrink-0">
+              <div className="w-10 h-10 rounded-full bg-brand-light flex items-center justify-center font-semibold text-brand flex-shrink-0">
                 {player.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -70,7 +70,7 @@ export default async function RankingPage({
                 </p>
               </div>
               <div className="text-right">
-                <p className="font-bold text-green-600 text-lg">{player.elo}</p>
+                <p className="font-bold text-brand text-lg">{player.elo}</p>
                 <p className="text-xs text-gray-400">{player.wins}V {player.losses}D</p>
               </div>
             </Link>

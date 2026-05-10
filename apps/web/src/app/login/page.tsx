@@ -31,7 +31,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
       <div className="w-full max-w-sm bg-white rounded-xl border border-gray-200 p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">🎾 Entrar</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">Entrar</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -41,7 +41,7 @@ export default function LoginPage() {
               required
               value={form.email}
               onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -51,7 +51,7 @@ export default function LoginPage() {
               required
               value={form.password}
               onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
 
@@ -60,7 +60,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-green-600 text-white rounded-lg py-2.5 font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+            className="w-full bg-brand text-white rounded-lg py-2.5 font-medium hover:bg-brand-dark disabled:opacity-50 transition-colors"
           >
             {loading ? 'Entrando...' : 'Entrar'}
           </button>
@@ -68,7 +68,7 @@ export default function LoginPage() {
 
         <p className="mt-4 text-center text-sm text-gray-500">
           Não tem conta?{' '}
-          <Link href="/register" className="text-green-600 font-medium hover:underline">
+          <Link href="/register" className="text-brand font-medium hover:underline">
             Cadastre-se
           </Link>
         </p>

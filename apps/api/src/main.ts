@@ -21,8 +21,8 @@ async function bootstrap() {
   app.enableCors({ origin: origins, credentials: true })
 
   const config = new DocumentBuilder()
-    .setTitle('Tennis Rank API')
-    .setDescription('API para rankamento de jogadores de tênis')
+    .setTitle('RANK API')
+    .setDescription('API para rankamento de jogadores esportivos — Jogue, Conecte, Evolua.')
     .setVersion('1.0')
     .addBearerAuth()
     .build()

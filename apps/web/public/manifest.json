@@ -1,11 +1,11 @@
 {
-  "name": "Tennis Rank",
-  "short_name": "TennisRank",
-  "description": "Ranking de jogadores de tênis da sua cidade",
+  "name": "RANK",
+  "short_name": "RANK",
+  "description": "Jogue, Conecte, Evolua. Ranking esportivo da sua cidade.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#16a34a",
+  "theme_color": "#2E1A8E",
   "orientation": "portrait",
   "icons": [
     {

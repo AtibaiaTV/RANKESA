@@ -6,22 +6,26 @@ export default function HomePage() {
     <>
       <Header />
       <main className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
-          🎾 Tennis Rank
-        </h1>
+        <div className="mb-2">
+          <span className="text-5xl font-black tracking-tight text-brand">RANK</span>
+          <span className="inline-block w-3 h-3 rounded-full bg-accent ml-1 mb-1" />
+        </div>
+        <p className="text-sm font-semibold tracking-widest text-accent uppercase mb-4">
+          JOGUE, CONECTE, EVOLUA.
+        </p>
         <p className="text-xl text-gray-600 mb-8 max-w-xl mx-auto">
-          Descubra sua posição no ranking local, registre partidas e evolua seu ELO na cidade.
+          Ranking esportivo da sua cidade. Registre partidas, suba no ELO e conecte-se com outros atletas.
         </p>
         <div className="flex gap-4 justify-center flex-wrap">
           <Link
             href="/ranking"
-            className="bg-green-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
+            className="bg-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-brand-dark transition-colors"
           >
             Ver Ranking
           </Link>
           <Link
             href="/register"
-            className="border border-green-600 text-green-600 px-6 py-3 rounded-lg font-medium hover:bg-green-50 transition-colors"
+            className="border border-brand text-brand px-6 py-3 rounded-lg font-medium hover:bg-brand-light transition-colors"
           >
             Cadastre-se
           </Link>
@@ -36,10 +40,10 @@ export default function HomePage() {
             </p>
           </div>
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-            <div className="text-3xl mb-3">📊</div>
-            <h3 className="font-semibold text-gray-900 mb-2">Histórico Completo</h3>
+            <div className="text-3xl mb-3">📅</div>
+            <h3 className="font-semibold text-gray-900 mb-2">Agende Partidas</h3>
             <p className="text-gray-600 text-sm">
-              Acompanhe todas as suas partidas, evolução do ELO e estatísticas de vitórias.
+              Organize partidas individuais, duplas ou coletivas e encontre adversários na sua cidade.
             </p>
           </div>
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">

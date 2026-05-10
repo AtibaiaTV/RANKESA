@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import { getPlayer } from '@/lib/api/players'
 import { getMatches } from '@/lib/api/matches'
 import { Header } from '@/components/layout/header'
-import { PlayerLevel, MatchStatus } from '@tennis-rank/shared'
+import { PlayerLevel, MatchStatus } from '@rank-app/shared'
 
 const LEVEL_LABELS: Record<PlayerLevel, string> = {
   [PlayerLevel.BEGINNER]: 'Iniciante',
@@ -38,7 +38,7 @@ export default async function PlayerProfilePage({
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-2xl font-bold text-green-700">
+            <div className="w-16 h-16 rounded-full bg-brand-light flex items-center justify-center text-2xl font-bold text-brand">
               {player.name.charAt(0).toUpperCase()}
             </div>
             <div>
@@ -51,7 +51,7 @@ export default async function PlayerProfilePage({
 
           <div className="mt-6 grid grid-cols-3 gap-4 text-center">
             <div className="bg-gray-50 rounded-lg p-3">
-              <p className="text-2xl font-bold text-green-600">{player.elo}</p>
+              <p className="text-2xl font-bold text-brand">{player.elo}</p>
               <p className="text-xs text-gray-500 mt-1">ELO</p>
             </div>
             <div className="bg-gray-50 rounded-lg p-3">

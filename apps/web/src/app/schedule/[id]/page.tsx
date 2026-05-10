@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
 import { getSchedule, joinSchedule, leaveSchedule, cancelSchedule } from '@/lib/api/schedules'
-import { ScheduledMatch, ScheduleStatus } from '@tennis-rank/shared'
+import { ScheduledMatch, ScheduleStatus } from '@rank-app/shared'
 import { GENDER_TYPE_LABEL, MATCH_TYPE_LABEL, SPORT_LABEL } from '@/lib/sports'
 import { Header } from '@/components/layout/header'
 
@@ -124,7 +124,7 @@ export default function ScheduleDetailPage() {
             <p>📍 {schedule.location}, {schedule.city}</p>
             <p>
               👥{' '}
-              <span className={spotsLeft === 0 ? 'text-orange-600 font-semibold' : 'text-green-600 font-semibold'}>
+              <span className={spotsLeft === 0 ? 'text-orange-600 font-semibold' : 'text-accent font-semibold'}>
                 {players.length}/{schedule.maxPlayers} participantes
               </span>
               {spotsLeft > 0 && <span className="text-gray-400"> · {spotsLeft} vaga(s)</span>}
@@ -139,7 +139,7 @@ export default function ScheduleDetailPage() {
               <button
                 onClick={handleJoin}
                 disabled={actionLoading}
-                className="flex-1 bg-green-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                className="flex-1 bg-brand text-white py-2.5 rounded-lg text-sm font-medium hover:bg-brand-dark disabled:opacity-50"
               >
                 Confirmar presença
               </button>
@@ -165,7 +165,7 @@ export default function ScheduleDetailPage() {
             {!player && (
               <Link
                 href="/login"
-                className="flex-1 bg-green-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 text-center"
+                className="flex-1 bg-brand text-white py-2.5 rounded-lg text-sm font-medium hover:bg-brand-dark text-center"
               >
                 Entrar para participar
               </Link>
@@ -188,7 +188,7 @@ export default function ScheduleDetailPage() {
                   href={`/players/${p!._id}`}
                   className="flex items-center gap-3 hover:bg-gray-50 rounded-lg p-2 -mx-2 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center font-semibold text-green-700 text-sm shrink-0">
+                  <div className="w-9 h-9 rounded-full bg-brand-light flex items-center justify-center font-semibold text-brand text-sm shrink-0">
                     {p!.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">

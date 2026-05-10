@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
 import { getMatch, confirmMatch, disputeMatch } from '@/lib/api/matches'
 import { getBetsForMatch, placeBet } from '@/lib/api/bets'
-import { Bet, BetStatus, Match, MatchStatus, Sport } from '@tennis-rank/shared'
+import { Bet, BetStatus, Match, MatchStatus, Sport } from '@rank-app/shared'
 import { Header } from '@/components/layout/header'
 
 const STATUS_LABELS: Record<MatchStatus, string> = {
@@ -151,7 +151,7 @@ export default function MatchDetailPage() {
 
           <div className="flex items-center justify-around py-4 border-y border-gray-100 mb-4">
             <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center font-bold text-green-700 mx-auto mb-1">
+              <div className="w-12 h-12 rounded-full bg-brand-light flex items-center justify-center font-bold text-brand mx-auto mb-1">
                 {p1?.name?.charAt(0) ?? '?'}
               </div>
               <p className="text-sm font-medium">{p1?.name ?? '—'}</p>
@@ -191,7 +191,7 @@ export default function MatchDetailPage() {
               <button
                 onClick={handleConfirm}
                 disabled={actionLoading}
-                className="flex-1 bg-green-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 disabled:opacity-50"
+                className="flex-1 bg-brand text-white py-2.5 rounded-lg text-sm font-medium hover:bg-brand-dark disabled:opacity-50"
               >
                 Confirmar
               </button>

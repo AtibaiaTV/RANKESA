@@ -12,7 +12,7 @@ import {
   TEAM_SPORTS,
   defaultMaxPlayers,
 } from '@/lib/sports'
-import { GenderType, MatchType, Sport } from '@tennis-rank/shared'
+import { GenderType, MatchType, Sport } from '@rank-app/shared'
 import { Header } from '@/components/layout/header'
 
 export default function NewSchedulePage() {
@@ -88,7 +88,7 @@ export default function NewSchedulePage() {
               required
               value={form.sport}
               onChange={(e) => handleSportChange(e.target.value as Sport)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               {SPORT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -104,7 +104,7 @@ export default function NewSchedulePage() {
                 required
                 value={form.matchType}
                 onChange={(e) => setForm((f) => ({ ...f, matchType: e.target.value as MatchType }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               >
                 {MATCH_TYPE_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -117,7 +117,7 @@ export default function NewSchedulePage() {
                 required
                 value={form.genderType}
                 onChange={(e) => setForm((f) => ({ ...f, genderType: e.target.value as GenderType }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               >
                 {GENDER_TYPE_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{o.label}</option>
@@ -135,7 +135,7 @@ export default function NewSchedulePage() {
               placeholder="Ex: Vôlei de Areia sábado manhã"
               value={form.title}
               onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
 
@@ -149,7 +149,7 @@ export default function NewSchedulePage() {
               placeholder="Nível exigido, regras, observações..."
               value={form.description}
               onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 resize-none"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand resize-none"
             />
           </div>
 
@@ -163,7 +163,7 @@ export default function NewSchedulePage() {
                 min={today}
                 value={form.date}
                 onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
             <div>
@@ -173,7 +173,7 @@ export default function NewSchedulePage() {
                 required
                 value={form.time}
                 onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           </div>
@@ -187,7 +187,7 @@ export default function NewSchedulePage() {
               placeholder="Ex: Quadra da Associação Atlética, Praia do Futuro"
               value={form.location}
               onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
           <div>
@@ -197,7 +197,7 @@ export default function NewSchedulePage() {
               required
               value={form.city}
               onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
           </div>
 
@@ -213,7 +213,7 @@ export default function NewSchedulePage() {
               max={50}
               value={form.maxPlayers}
               onChange={(e) => setForm((f) => ({ ...f, maxPlayers: Number(e.target.value) }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             />
             <p className="text-xs text-gray-400 mt-1">Você já conta como 1 participante</p>
           </div>
@@ -223,7 +223,7 @@ export default function NewSchedulePage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-green-600 text-white rounded-lg py-2.5 font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+            className="w-full bg-brand text-white rounded-lg py-2.5 font-medium hover:bg-brand-dark disabled:opacity-50 transition-colors"
           >
             {loading ? 'Criando...' : 'Criar partida'}
           </button>

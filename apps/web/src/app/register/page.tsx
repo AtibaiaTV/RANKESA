@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { register } from '@/lib/api/auth'
 import { useAuth } from '@/contexts/auth-context'
-import { Gender, PlayerLevel } from '@tennis-rank/shared'
+import { Gender, PlayerLevel } from '@rank-app/shared'
 
 const LEVEL_OPTIONS = [
   { value: PlayerLevel.BEGINNER, label: 'Iniciante' },
@@ -51,7 +51,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
       <div className="w-full max-w-sm bg-white rounded-xl border border-gray-200 p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">🎾 Criar conta</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">Criar conta</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {[
@@ -67,7 +67,7 @@ export default function RegisterPage() {
                 required
                 value={form[key as keyof typeof form]}
                 onChange={(e) => setForm((f) => ({ ...f, [key]: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
               />
             </div>
           ))}
@@ -77,7 +77,7 @@ export default function RegisterPage() {
             <select
               value={form.level}
               onChange={(e) => setForm((f) => ({ ...f, level: e.target.value as PlayerLevel }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               {LEVEL_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -90,7 +90,7 @@ export default function RegisterPage() {
             <select
               value={form.gender}
               onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value as Gender | '' }))}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
             >
               {GENDER_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>{o.label}</option>
@@ -103,7 +103,7 @@ export default function RegisterPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-green-600 text-white rounded-lg py-2.5 font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+            className="w-full bg-brand text-white rounded-lg py-2.5 font-medium hover:bg-brand-dark disabled:opacity-50 transition-colors"
           >
             {loading ? 'Cadastrando...' : 'Criar conta'}
           </button>
@@ -111,7 +111,7 @@ export default function RegisterPage() {
 
         <p className="mt-4 text-center text-sm text-gray-500">
           Já tem conta?{' '}
-          <Link href="/login" className="text-green-600 font-medium hover:underline">
+          <Link href="/login" className="text-brand font-medium hover:underline">
             Entrar
           </Link>
         </p>

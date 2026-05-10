@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { getSchedules } from '@/lib/api/schedules'
 import { Header } from '@/components/layout/header'
-import { GenderType, MatchType, ScheduleStatus, Sport } from '@tennis-rank/shared'
+import { GenderType, MatchType, ScheduleStatus, Sport } from '@rank-app/shared'
 import {
   GENDER_TYPE_LABEL,
   MATCH_TYPE_LABEL,
@@ -49,7 +49,7 @@ export default async function SchedulePage({
           </div>
           <Link
             href="/schedule/new"
-            className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-green-700"
+            className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-dark"
           >
             + Criar partida
           </Link>
@@ -60,7 +60,7 @@ export default async function SchedulePage({
           <Link
             href="/schedule"
             className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-              !params.sport ? 'bg-green-600 text-white border-green-600' : 'border-gray-300 text-gray-600 hover:border-green-400'
+              !params.sport ? 'bg-brand text-white border-brand' : 'border-gray-300 text-gray-600 hover:border-brand'
             }`}
           >
             Todos
@@ -71,8 +71,8 @@ export default async function SchedulePage({
               href={`/schedule?sport=${o.value}${params.matchType ? `&matchType=${params.matchType}` : ''}${params.genderType ? `&genderType=${params.genderType}` : ''}`}
               className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
                 params.sport === o.value
-                  ? 'bg-green-600 text-white border-green-600'
-                  : 'border-gray-300 text-gray-600 hover:border-green-400'
+                  ? 'bg-brand text-white border-brand'
+                  : 'border-gray-300 text-gray-600 hover:border-brand'
               }`}
             >
               {o.label}
@@ -114,7 +114,7 @@ export default async function SchedulePage({
           <div className="text-center py-16 text-gray-400">
             <p className="text-4xl mb-3">📅</p>
             <p>Nenhuma partida agendada</p>
-            <Link href="/schedule/new" className="text-green-600 text-sm mt-2 inline-block hover:underline">
+            <Link href="/schedule/new" className="text-brand text-sm mt-2 inline-block hover:underline">
               Criar a primeira
             </Link>
           </div>
@@ -146,7 +146,7 @@ export default async function SchedulePage({
                     <p>📍 {s.location}, {s.city}</p>
                     <p>
                       {GENDER_TYPE_LABEL[s.genderType]} ·{' '}
-                      <span className={spotsLeft === 0 ? 'text-orange-600 font-medium' : 'text-green-600'}>
+                      <span className={spotsLeft === 0 ? 'text-orange-600 font-medium' : 'text-accent'}>
                         {s.players.length}/{s.maxPlayers} confirmados
                       </span>
                     </p>

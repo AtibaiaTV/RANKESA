@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { getMatches, adminResolve } from '@/lib/api/matches'
-import { Match, MatchStatus, SystemRole } from '@tennis-rank/shared'
+import { Match, MatchStatus, SystemRole } from '@rank-app/shared'
 import { Header } from '@/components/layout/header'
 
 export default function AdminPage() {
@@ -79,7 +79,7 @@ export default function AdminPage() {
                     {p1 && (
                       <button
                         onClick={() => handleResolve(m._id, p1._id)}
-                        className="flex-1 border border-green-300 text-green-700 py-2 rounded-lg text-sm hover:bg-green-50"
+                        className="flex-1 border border-brand text-brand py-2 rounded-lg text-sm hover:bg-brand-light"
                       >
                         {p1.name}
                       </button>
@@ -87,7 +87,7 @@ export default function AdminPage() {
                     {p2 && (
                       <button
                         onClick={() => handleResolve(m._id, p2._id)}
-                        className="flex-1 border border-green-300 text-green-700 py-2 rounded-lg text-sm hover:bg-green-50"
+                        className="flex-1 border border-brand text-brand py-2 rounded-lg text-sm hover:bg-brand-light"
                       >
                         {p2.name}
                       </button>
