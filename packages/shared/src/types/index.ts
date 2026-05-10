@@ -15,6 +15,26 @@ export enum SystemRole {
   PLAYER = 'PLAYER',
 }
 
+export enum Sport {
+  TENNIS = 'TENNIS',
+  PADEL = 'PADEL',
+  SQUASH = 'SQUASH',
+  BADMINTON = 'BADMINTON',
+  TABLE_TENNIS = 'TABLE_TENNIS',
+  BEACH_TENNIS = 'BEACH_TENNIS',
+  VOLLEYBALL = 'VOLLEYBALL',
+  BASKETBALL = 'BASKETBALL',
+  FOOTBALL = 'FOOTBALL',
+  CHESS = 'CHESS',
+}
+
+export enum BetStatus {
+  PENDING = 'PENDING',
+  WON = 'WON',
+  LOST = 'LOST',
+  CANCELLED = 'CANCELLED',
+}
+
 export interface Player {
   _id: string
   name: string
@@ -26,12 +46,14 @@ export interface Player {
   wins: number
   losses: number
   matchesPlayed: number
+  coins: number
   role: SystemRole
   createdAt: string
 }
 
 export interface Match {
   _id: string
+  sport: Sport
   player1: Player | string
   player2: Player | string
   winner: Player | string
@@ -42,6 +64,16 @@ export interface Match {
   disputedBy?: Player | string
   disputeReason?: string
   confirmedAt?: string
+  createdAt: string
+}
+
+export interface Bet {
+  _id: string
+  match: Match | string
+  bettor: Player | string
+  predictedWinner: Player | string
+  amount: number
+  status: BetStatus
   createdAt: string
 }
 

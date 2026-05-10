@@ -21,10 +21,11 @@ export class PlayersService {
   }
 
   async findAll(query: QueryPlayersDto) {
-    const { city, level, page = 1, limit = 20 } = query
+    const { city, level, sport, page = 1, limit = 20 } = query
     const filter: Record<string, unknown> = {}
     if (city) filter.city = { $regex: city, $options: 'i' }
     if (level) filter.level = level
+    if (sport) filter.sports = sport
 
     const [data, total] = await Promise.all([
       this.playerModel

@@ -1,5 +1,5 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator'
-import { PlayerLevel } from '@tennis-rank/shared'
+import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator'
+import { PlayerLevel, Sport } from '@tennis-rank/shared'
 
 export class UpdatePlayerDto {
   @IsString()
@@ -17,4 +17,9 @@ export class UpdatePlayerDto {
   @IsString()
   @IsOptional()
   avatar?: string
+
+  @IsArray()
+  @IsEnum(Sport, { each: true })
+  @IsOptional()
+  sports?: Sport[]
 }

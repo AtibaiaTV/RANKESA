@@ -1,11 +1,15 @@
 import { IsEnum, IsInt, IsMongoId, IsOptional, Max, Min } from 'class-validator'
 import { Type } from 'class-transformer'
-import { MatchStatus } from '@tennis-rank/shared'
+import { MatchStatus, Sport } from '@tennis-rank/shared'
 
 export class QueryMatchesDto {
   @IsMongoId()
   @IsOptional()
   playerId?: string
+
+  @IsEnum(Sport)
+  @IsOptional()
+  sport?: Sport
 
   @IsEnum(MatchStatus)
   @IsOptional()

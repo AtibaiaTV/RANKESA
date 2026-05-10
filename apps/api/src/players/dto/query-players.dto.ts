@@ -1,6 +1,6 @@
 import { IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator'
 import { Type } from 'class-transformer'
-import { PlayerLevel } from '@tennis-rank/shared'
+import { PlayerLevel, Sport } from '@tennis-rank/shared'
 
 export class QueryPlayersDto {
   @IsString()
@@ -10,6 +10,10 @@ export class QueryPlayersDto {
   @IsEnum(PlayerLevel)
   @IsOptional()
   level?: PlayerLevel
+
+  @IsEnum(Sport)
+  @IsOptional()
+  sport?: Sport
 
   @IsInt()
   @Min(1)

@@ -1,6 +1,10 @@
-import { IsDateString, IsMongoId, IsNotEmpty, IsString } from 'class-validator'
+import { IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsString } from 'class-validator'
+import { Sport } from '@tennis-rank/shared'
 
 export class CreateMatchDto {
+  @IsEnum(Sport)
+  sport: Sport
+
   @IsMongoId()
   opponentId: string
 

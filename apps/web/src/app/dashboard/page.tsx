@@ -4,15 +4,16 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
-import { getMatches } from '@/lib/api/matches'
-import { confirmMatch, disputeMatch } from '@/lib/api/matches'
-import { Match, MatchStatus } from '@tennis-rank/shared'
+import { getMatches, confirmMatch, disputeMatch } from '@/lib/api/matches'
+import { getMyBets } from '@/lib/api/bets'
+import { Bet, BetStatus, Match, MatchStatus } from '@tennis-rank/shared'
 import { Header } from '@/components/layout/header'
 
 export default function DashboardPage() {
   const { player, token, isAuthenticated } = useAuth()
   const router = useRouter()
   const [matches, setMatches] = useState<Match[]>([])
+  const [myBets, setMyBets] = useState<Bet[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -22,8 +23,14 @@ export default function DashboardPage() {
     }
     if (!player) return
 
-    getMatches({ playerId: player._id, limit: 20 })
-      .then((r) => setMatches(r.data))
+    Promise.all([
+      getMatches({ playerId: player._id, limit: 20 }),
+      token ? getMyBets(token) : Promise.resolve([]),
+    ])
+      .then(([matchesData, betsData]) => {
+        setMatches(matchesData.data)
+        setMyBets(betsData)
+      })
       .finally(() => setLoading(false))
   }, [isAuthenticated, player, router])
 
@@ -71,7 +78,7 @@ export default function DashboardPage() {
 
         {player && (
           <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-4 gap-3 text-center">
               <div>
                 <p className="text-3xl font-bold text-green-600">{player.elo}</p>
                 <p className="text-xs text-gray-500 mt-1">ELO</p>
@@ -83,6 +90,10 @@ export default function DashboardPage() {
               <div>
                 <p className="text-3xl font-bold text-gray-800">{player.losses}</p>
                 <p className="text-xs text-gray-500 mt-1">Derrotas</p>
+              </div>
+              <div>
+                <p className="text-3xl font-bold text-yellow-500">{player.coins}</p>
+                <p className="text-xs text-gray-500 mt-1">🪙 Moedas</p>
               </div>
             </div>
           </div>
@@ -182,6 +193,39 @@ export default function DashboardPage() {
             {matches.length === 0 && (
               <p className="text-center text-gray-400 py-8">Nenhuma partida ainda</p>
             )}
+          </div>
+        )}
+
+        {myBets.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-base font-semibold text-gray-900 mb-3">🪙 Minhas apostas</h2>
+            <div className="space-y-2">
+              {myBets.map((bet) => {
+                const matchData = typeof bet.match === 'object' ? bet.match : null
+                const predicted = typeof bet.predictedWinner === 'object' ? bet.predictedWinner : null
+                const statusMap: Record<BetStatus, { label: string; cls: string }> = {
+                  [BetStatus.PENDING]: { label: 'Pendente', cls: 'bg-yellow-100 text-yellow-700' },
+                  [BetStatus.WON]: { label: '+${bet.amount}🪙', cls: 'bg-green-100 text-green-700' },
+                  [BetStatus.LOST]: { label: '-${bet.amount}🪙', cls: 'bg-red-100 text-red-600' },
+                  [BetStatus.CANCELLED]: { label: 'Cancelada', cls: 'bg-gray-100 text-gray-500' },
+                }
+                const s = statusMap[bet.status]
+                return (
+                  <div key={bet._id} className="flex items-center justify-between bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm">
+                    <div>
+                      <p className="font-medium text-gray-800">{predicted?.name ?? '—'}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">
+                        {matchData ? new Date(matchData.date).toLocaleDateString('pt-BR') : ''}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-yellow-600 font-medium">{bet.amount}🪙</span>
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
           </div>
         )}
       </main>

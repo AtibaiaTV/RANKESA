@@ -6,12 +6,14 @@ import { MatchesController } from './matches.controller'
 import { AutoConfirmTask } from './tasks/auto-confirm.task'
 import { PlayersModule } from '../players/players.module'
 import { MailModule } from '../mail/mail.module'
+import { BetsModule } from '../bets/bets.module'
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: Match.name, schema: MatchSchema }]),
     PlayersModule,
     MailModule,
+    BetsModule,
   ],
   providers: [MatchesService, AutoConfirmTask],
   controllers: [MatchesController],

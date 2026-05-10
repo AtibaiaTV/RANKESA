@@ -6,14 +6,28 @@ import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
 import { createMatch } from '@/lib/api/matches'
 import { getPlayers } from '@/lib/api/players'
-import { Player } from '@tennis-rank/shared'
+import { Player, Sport } from '@tennis-rank/shared'
 import { Header } from '@/components/layout/header'
 
 export default function NewMatchPage() {
   const { player, token, isAuthenticated } = useAuth()
   const router = useRouter()
   const [players, setPlayers] = useState<Player[]>([])
+  const SPORT_OPTIONS = [
+    { value: Sport.TENNIS, label: '🎾 Tênis' },
+    { value: Sport.PADEL, label: '🏓 Padel' },
+    { value: Sport.BEACH_TENNIS, label: '🏖️ Beach Tennis' },
+    { value: Sport.SQUASH, label: '🟡 Squash' },
+    { value: Sport.BADMINTON, label: '🏸 Badminton' },
+    { value: Sport.TABLE_TENNIS, label: '🏓 Tênis de Mesa' },
+    { value: Sport.VOLLEYBALL, label: '🏐 Vôlei' },
+    { value: Sport.BASKETBALL, label: '🏀 Basquete' },
+    { value: Sport.FOOTBALL, label: '⚽ Futebol' },
+    { value: Sport.CHESS, label: '♟️ Xadrez' },
+  ]
+
   const [form, setForm] = useState({
+    sport: Sport.TENNIS,
     opponentId: '',
     winnerId: '',
     score: '',
@@ -61,6 +75,20 @@ export default function NewMatchPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Esporte</label>
+            <select
+              required
+              value={form.sport}
+              onChange={(e) => setForm((f) => ({ ...f, sport: e.target.value as Sport }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              {SPORT_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Adversário</label>
             <select

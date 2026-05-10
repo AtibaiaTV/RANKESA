@@ -1,11 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument, Types } from 'mongoose'
-import { MatchStatus } from '@tennis-rank/shared'
+import { MatchStatus, Sport } from '@tennis-rank/shared'
 
 export type MatchDocument = HydratedDocument<Match>
 
 @Schema({ timestamps: true })
 export class Match {
+  @Prop({ required: true, enum: Sport })
+  sport: Sport
+
   @Prop({ type: Types.ObjectId, ref: 'Player', required: true })
   player1: Types.ObjectId
 
@@ -41,6 +44,7 @@ export class Match {
 }
 
 export const MatchSchema = SchemaFactory.createForClass(Match)
+MatchSchema.index({ sport: 1, createdAt: -1 })
 MatchSchema.index({ player1: 1, createdAt: -1 })
 MatchSchema.index({ player2: 1, createdAt: -1 })
 MatchSchema.index({ status: 1, createdAt: 1 })

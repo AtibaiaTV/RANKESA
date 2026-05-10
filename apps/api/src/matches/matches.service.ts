@@ -14,6 +14,7 @@ import { ResolveDisputeDto } from './dto/resolve-dispute.dto'
 import { QueryMatchesDto } from './dto/query-matches.dto'
 import { PlayersService } from '../players/players.service'
 import { MailService } from '../mail/mail.service'
+import { BetsService } from '../bets/bets.service'
 
 @Injectable()
 export class MatchesService {
@@ -21,6 +22,7 @@ export class MatchesService {
     @InjectModel(Match.name) private readonly matchModel: Model<MatchDocument>,
     private readonly playersService: PlayersService,
     private readonly mailService: MailService,
+    private readonly betsService: BetsService,
   ) {}
 
   async create(registeredById: string, dto: CreateMatchDto): Promise<MatchDocument> {
@@ -38,6 +40,7 @@ export class MatchesService {
     }
 
     const match = new this.matchModel({
+      sport: dto.sport,
       player1: player1Id,
       player2: player2Id,
       winner: winnerId,
@@ -65,13 +68,14 @@ export class MatchesService {
   }
 
   async findAll(query: QueryMatchesDto) {
-    const { playerId, status, page = 1, limit = 20 } = query
+    const { playerId, sport, status, page = 1, limit = 20 } = query
     const filter: Record<string, unknown> = {}
 
     if (playerId) {
       const id = new Types.ObjectId(playerId)
       filter.$or = [{ player1: id }, { player2: id }]
     }
+    if (sport) filter.sport = sport
     if (status) filter.status = status
 
     const [data, total] = await Promise.all([
@@ -195,5 +199,8 @@ export class MatchesService {
 
     match.eloApplied = true
     await match.save()
+
+    // Resolve bets for this match
+    await this.betsService.resolveForMatch(String(match._id), match.winner as Types.ObjectId)
   }
 }
