@@ -5,12 +5,18 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { register } from '@/lib/api/auth'
 import { useAuth } from '@/contexts/auth-context'
-import { PlayerLevel } from '@tennis-rank/shared'
+import { Gender, PlayerLevel } from '@tennis-rank/shared'
 
 const LEVEL_OPTIONS = [
   { value: PlayerLevel.BEGINNER, label: 'Iniciante' },
   { value: PlayerLevel.INTERMEDIATE, label: 'Intermediário' },
   { value: PlayerLevel.ADVANCED, label: 'Avançado' },
+]
+
+const GENDER_OPTIONS = [
+  { value: '', label: 'Prefiro não informar' },
+  { value: Gender.MALE, label: 'Masculino' },
+  { value: Gender.FEMALE, label: 'Feminino' },
 ]
 
 export default function RegisterPage() {
@@ -22,6 +28,7 @@ export default function RegisterPage() {
     password: '',
     city: '',
     level: PlayerLevel.BEGINNER,
+    gender: '' as Gender | '',
   })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -73,9 +80,20 @@ export default function RegisterPage() {
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
             >
               {LEVEL_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
+                <option key={o.value} value={o.value}>{o.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Gênero</label>
+            <select
+              value={form.gender}
+              onChange={(e) => setForm((f) => ({ ...f, gender: e.target.value as Gender | '' }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              {GENDER_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>{o.label}</option>
               ))}
             </select>
           </div>

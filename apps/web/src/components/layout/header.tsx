@@ -16,6 +16,9 @@ export function Header() {
           <Link href="/ranking" className="text-gray-600 hover:text-green-600">
             Ranking
           </Link>
+          <Link href="/schedule" className="text-gray-600 hover:text-green-600">
+            Partidas
+          </Link>
           {isAuthenticated ? (
             <>
               <Link href="/dashboard" className="text-gray-600 hover:text-green-600">

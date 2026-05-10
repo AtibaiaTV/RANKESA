@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
-import { PlayerLevel, Sport, SystemRole } from '@tennis-rank/shared'
+import { Gender, PlayerLevel, Sport, SystemRole } from '@tennis-rank/shared'
 
 export type PlayerDocument = HydratedDocument<Player>
 
@@ -20,6 +20,9 @@ export class Player {
 
   @Prop({ required: true, enum: PlayerLevel, default: PlayerLevel.BEGINNER })
   level: PlayerLevel
+
+  @Prop({ enum: Gender })
+  gender?: Gender
 
   @Prop({ required: true, default: 1000 })
   elo: number

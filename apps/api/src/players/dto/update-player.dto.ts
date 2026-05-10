@@ -1,5 +1,5 @@
 import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator'
-import { PlayerLevel, Sport } from '@tennis-rank/shared'
+import { Gender, PlayerLevel, Sport } from '@tennis-rank/shared'
 
 export class UpdatePlayerDto {
   @IsString()
@@ -13,6 +13,10 @@ export class UpdatePlayerDto {
   @IsEnum(PlayerLevel)
   @IsOptional()
   level?: PlayerLevel
+
+  @IsEnum(Gender)
+  @IsOptional()
+  gender?: Gender
 
   @IsString()
   @IsOptional()

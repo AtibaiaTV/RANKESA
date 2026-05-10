@@ -32,6 +32,31 @@ export enum Sport {
   CHESS = 'CHESS',
 }
 
+export enum Gender {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  PREFER_NOT_TO_SAY = 'PREFER_NOT_TO_SAY',
+}
+
+export enum MatchType {
+  INDIVIDUAL = 'INDIVIDUAL',
+  DOUBLES = 'DOUBLES',
+  TEAM = 'TEAM',
+}
+
+export enum GenderType {
+  MALE = 'MALE',
+  FEMALE = 'FEMALE',
+  MIXED = 'MIXED',
+}
+
+export enum ScheduleStatus {
+  OPEN = 'OPEN',
+  FULL = 'FULL',
+  CANCELLED = 'CANCELLED',
+  COMPLETED = 'COMPLETED',
+}
+
 export enum BetStatus {
   PENDING = 'PENDING',
   WON = 'WON',
@@ -46,6 +71,7 @@ export interface Player {
   avatar?: string
   city: string
   level: PlayerLevel
+  gender?: Gender
   elo: number
   wins: number
   losses: number
@@ -78,6 +104,24 @@ export interface Bet {
   predictedWinner: Player | string
   amount: number
   status: BetStatus
+  createdAt: string
+}
+
+export interface ScheduledMatch {
+  _id: string
+  sport: Sport
+  matchType: MatchType
+  genderType: GenderType
+  organizer: Player | string
+  title: string
+  description?: string
+  date: string
+  time: string
+  location: string
+  city: string
+  maxPlayers: number
+  players: (Player | string)[]
+  status: ScheduleStatus
   createdAt: string
 }
 
