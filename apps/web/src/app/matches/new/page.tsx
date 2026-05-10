@@ -1,0 +1,137 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { useAuth } from '@/contexts/auth-context'
+import { createMatch } from '@/lib/api/matches'
+import { getPlayers } from '@/lib/api/players'
+import { Player } from '@tennis-rank/shared'
+import { Header } from '@/components/layout/header'
+
+export default function NewMatchPage() {
+  const { player, token, isAuthenticated } = useAuth()
+  const router = useRouter()
+  const [players, setPlayers] = useState<Player[]>([])
+  const [form, setForm] = useState({
+    opponentId: '',
+    winnerId: '',
+    score: '',
+    date: new Date().toISOString().split('T')[0],
+  })
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.push('/login')
+      return
+    }
+    getPlayers({ limit: 100 }).then((r) =>
+      setPlayers(r.data.filter((p) => p._id !== player?._id)),
+    )
+  }, [isAuthenticated, player, router])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!token) return
+    setError('')
+    setLoading(true)
+    try {
+      await createMatch(token, form)
+      router.push('/dashboard')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao registrar partida')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const opponentSelected = players.find((p) => p._id === form.opponentId)
+
+  return (
+    <>
+      <Header />
+      <main className="max-w-md mx-auto px-4 py-8">
+        <div className="flex items-center gap-3 mb-6">
+          <Link href="/dashboard" className="text-gray-400 hover:text-gray-600">
+            ← Voltar
+          </Link>
+          <h1 className="text-xl font-bold text-gray-900">Registrar Partida</h1>
+        </div>
+
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Adversário</label>
+            <select
+              required
+              value={form.opponentId}
+              onChange={(e) => setForm((f) => ({ ...f, opponentId: e.target.value, winnerId: '' }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">Selecionar adversário...</option>
+              {players.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.name} ({p.city}) — ELO {p.elo}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Vencedor</label>
+            <select
+              required
+              value={form.winnerId}
+              onChange={(e) => setForm((f) => ({ ...f, winnerId: e.target.value }))}
+              disabled={!form.opponentId}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 disabled:bg-gray-50"
+            >
+              <option value="">Selecionar vencedor...</option>
+              {player && <option value={player._id}>{player.name} (Eu)</option>}
+              {opponentSelected && (
+                <option value={opponentSelected._id}>{opponentSelected.name}</option>
+              )}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Placar (ex: 6-3 6-4)
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="6-3 6-4"
+              value={form.score}
+              onChange={(e) => setForm((f) => ({ ...f, score: e.target.value }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Data da partida</label>
+            <input
+              type="date"
+              required
+              value={form.date}
+              max={new Date().toISOString().split('T')[0]}
+              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-green-600 text-white rounded-lg py-2.5 font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
+          >
+            {loading ? 'Registrando...' : 'Registrar resultado'}
+          </button>
+        </form>
+      </main>
+    </>
+  )
+}
