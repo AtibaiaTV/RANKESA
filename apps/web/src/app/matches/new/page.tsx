@@ -21,8 +21,12 @@ export default function NewMatchPage() {
     { value: Sport.BADMINTON, label: '🏸 Badminton' },
     { value: Sport.TABLE_TENNIS, label: '🏓 Tênis de Mesa' },
     { value: Sport.VOLLEYBALL, label: '🏐 Vôlei' },
+    { value: Sport.BEACH_VOLLEYBALL, label: '🏖️ Vôlei de Areia' },
+    { value: Sport.FOOTVOLLEY, label: '🦶 Futevôlei' },
+    { value: Sport.FUTSAL, label: '👟 Futsal' },
     { value: Sport.BASKETBALL, label: '🏀 Basquete' },
     { value: Sport.FOOTBALL, label: '⚽ Futebol' },
+    { value: Sport.HANDBALL, label: '🤾 Handebol' },
     { value: Sport.CHESS, label: '♟️ Xadrez' },
   ]
 
