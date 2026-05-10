@@ -8,6 +8,7 @@ import { getMatches, confirmMatch, disputeMatch } from '@/lib/api/matches'
 import { getMyBets } from '@/lib/api/bets'
 import { Bet, BetStatus, Match, MatchStatus } from '@rank-app/shared'
 import { Header } from '@/components/layout/header'
+import { SPORT_LABEL } from '@/lib/sports'
 
 export default function DashboardPage() {
   const { player, token, isAuthenticated } = useAuth()
@@ -67,7 +68,12 @@ export default function DashboardPage() {
       <Header />
       <main className="max-w-2xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">Meu Painel</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Meu Painel</h1>
+            {player?.sport && (
+              <p className="text-sm text-brand font-medium mt-0.5">{SPORT_LABEL[player.sport]}</p>
+            )}
+          </div>
           <Link
             href="/matches/new"
             className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-dark"
@@ -92,8 +98,8 @@ export default function DashboardPage() {
                 <p className="text-xs text-gray-500 mt-1">Derrotas</p>
               </div>
               <div>
-                <p className="text-3xl font-bold text-yellow-500">{player.coins}</p>
-                <p className="text-xs text-gray-500 mt-1">🪙 Moedas</p>
+                <p className="text-3xl font-bold text-yellow-500">{player.boletas}</p>
+                <p className="text-xs text-gray-500 mt-1">🪙 Boletas</p>
               </div>
             </div>
           </div>
@@ -205,8 +211,8 @@ export default function DashboardPage() {
                 const predicted = typeof bet.predictedWinner === 'object' ? bet.predictedWinner : null
                 const statusMap: Record<BetStatus, { label: string; cls: string }> = {
                   [BetStatus.PENDING]: { label: 'Pendente', cls: 'bg-yellow-100 text-yellow-700' },
-                  [BetStatus.WON]: { label: '+${bet.amount}🪙', cls: 'bg-green-100 text-green-700' },
-                  [BetStatus.LOST]: { label: '-${bet.amount}🪙', cls: 'bg-red-100 text-red-600' },
+                  [BetStatus.WON]: { label: `+${bet.amount} boletas`, cls: 'bg-green-100 text-green-700' },
+                  [BetStatus.LOST]: { label: `-${bet.amount} boletas`, cls: 'bg-red-100 text-red-600' },
                   [BetStatus.CANCELLED]: { label: 'Cancelada', cls: 'bg-gray-100 text-gray-500' },
                 }
                 const s = statusMap[bet.status]

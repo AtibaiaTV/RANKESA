@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import { Player } from '@tennis-rank/shared'
+import { Player } from '@rank-app/shared'
 
 interface AuthResponse {
   accessToken: string

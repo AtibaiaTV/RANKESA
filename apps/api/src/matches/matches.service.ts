@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
-import { calculateElo, MatchStatus } from '@tennis-rank/shared'
+import { calculateElo, MatchStatus } from '@rank-app/shared'
 import { Match, MatchDocument } from './schemas/match.schema'
 import { CreateMatchDto } from './dto/create-match.dto'
 import { DisputeMatchDto } from './dto/dispute-match.dto'

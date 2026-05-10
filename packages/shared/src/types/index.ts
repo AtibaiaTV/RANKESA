@@ -76,7 +76,13 @@ export interface Player {
   wins: number
   losses: number
   matchesPlayed: number
-  coins: number
+  boletas: number
+  sport: Sport
+  venue?: string
+  region?: string
+  state?: string
+  country?: string
+  birthDate?: string
   role: SystemRole
   createdAt: string
 }

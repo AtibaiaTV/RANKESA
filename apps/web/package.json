@@ -9,7 +9,7 @@
     "clean": "rm -rf .next"
   },
   "dependencies": {
-    "@tennis-rank/shared": "workspace:*",
+    "@rank-app/shared": "workspace:*",
     "next": "^15.0.0",
     "next-pwa": "^5.6.0",
     "react": "^19.0.0",

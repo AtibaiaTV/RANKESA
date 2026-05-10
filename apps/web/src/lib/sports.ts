@@ -1,4 +1,4 @@
-import { GenderType, MatchType, Sport } from '@tennis-rank/shared'
+import { GenderType, MatchType, Sport } from '@rank-app/shared'
 
 export const SPORT_OPTIONS = [
   { value: Sport.TENNIS, label: '🎾 Tênis' },

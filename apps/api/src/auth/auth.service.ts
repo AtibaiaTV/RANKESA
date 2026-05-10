@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt'
 import { PlayersService } from '../players/players.service'
 import { RegisterDto } from './dto/register.dto'
 import { LoginDto } from './dto/login.dto'
-import { JwtPayload } from '@tennis-rank/shared'
+import { JwtPayload } from '@rank-app/shared'
 
 @Injectable()
 export class AuthService {

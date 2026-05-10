@@ -1,5 +1,13 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator'
-import { PlayerLevel } from '@tennis-rank/shared'
+import {
+  IsDateString,
+  IsEmail,
+  IsEnum,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator'
+import { Gender, PlayerLevel, Sport } from '@rank-app/shared'
 
 export class RegisterDto {
   @IsString()
@@ -13,6 +21,9 @@ export class RegisterDto {
   @MinLength(6)
   password: string
 
+  @IsEnum(Sport)
+  sport: Sport
+
   @IsString()
   @IsNotEmpty()
   city: string
@@ -20,4 +31,28 @@ export class RegisterDto {
   @IsEnum(PlayerLevel)
   @IsOptional()
   level?: PlayerLevel
+
+  @IsEnum(Gender)
+  @IsOptional()
+  gender?: Gender
+
+  @IsString()
+  @IsOptional()
+  venue?: string
+
+  @IsString()
+  @IsOptional()
+  region?: string
+
+  @IsString()
+  @IsOptional()
+  state?: string
+
+  @IsString()
+  @IsOptional()
+  country?: string
+
+  @IsDateString()
+  @IsOptional()
+  birthDate?: string
 }

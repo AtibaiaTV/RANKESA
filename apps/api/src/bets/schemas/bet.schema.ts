@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument, Types } from 'mongoose'
-import { BetStatus } from '@tennis-rank/shared'
+import { BetStatus } from '@rank-app/shared'
 
 export type BetDocument = HydratedDocument<Bet>
 

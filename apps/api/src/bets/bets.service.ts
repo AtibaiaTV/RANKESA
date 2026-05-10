@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
-import { BetStatus, MatchStatus } from '@tennis-rank/shared'
+import { BetStatus, MatchStatus } from '@rank-app/shared'
 import { Bet, BetDocument } from './schemas/bet.schema'
 import { PlaceBetDto } from './dto/place-bet.dto'
 import { Match, MatchDocument } from '../matches/schemas/match.schema'
@@ -39,13 +39,13 @@ export class BetsService {
 
     const bettor = await this.playerModel.findById(bettorId)
     if (!bettor) throw new NotFoundException('Jogador não encontrado')
-    if (bettor.coins < dto.amount) {
+    if (bettor.boletas < dto.amount) {
       throw new BadRequestException(
-        `Saldo insuficiente. Você tem ${bettor.coins} moedas`,
+        `Saldo insuficiente. Você tem ${bettor.boletas} boletas`,
       )
     }
 
-    bettor.coins -= dto.amount
+    bettor.boletas -= dto.amount
     await bettor.save()
 
     const bet = new this.betModel({
@@ -89,7 +89,7 @@ export class BetsService {
       if (won) {
         // Devolve o dobro: valor apostado + mesmo valor de prêmio
         await this.playerModel.findByIdAndUpdate(bet.bettor, {
-          $inc: { coins: bet.amount * 2 },
+          $inc: { boletas: bet.amount * 2 },
         })
       }
 
@@ -106,7 +106,7 @@ export class BetsService {
     for (const bet of bets) {
       bet.status = BetStatus.CANCELLED
       await this.playerModel.findByIdAndUpdate(bet.bettor, {
-        $inc: { coins: bet.amount },
+        $inc: { boletas: bet.amount },
       })
       await bet.save()
     }

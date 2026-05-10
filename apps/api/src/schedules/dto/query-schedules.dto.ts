@@ -1,6 +1,6 @@
 import { IsDateString, IsEnum, IsInt, IsOptional, IsString, Max, Min } from 'class-validator'
 import { Type } from 'class-transformer'
-import { GenderType, MatchType, ScheduleStatus, Sport } from '@tennis-rank/shared'
+import { GenderType, MatchType, ScheduleStatus, Sport } from '@rank-app/shared'
 
 export class QuerySchedulesDto {
   @IsEnum(Sport)

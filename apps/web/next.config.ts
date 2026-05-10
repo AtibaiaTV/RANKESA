@@ -8,7 +8,7 @@ const withPWA = require('next-pwa')({
 })
 
 const nextConfig: NextConfig = {
-  transpilePackages: ['@tennis-rank/shared'],
+  transpilePackages: ['@rank-app/shared'],
 }
 
 module.exports = withPWA(nextConfig)

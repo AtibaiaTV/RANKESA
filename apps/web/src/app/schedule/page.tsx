@@ -1,7 +1,12 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { getSchedules } from '@/lib/api/schedules'
 import { Header } from '@/components/layout/header'
-import { GenderType, MatchType, ScheduleStatus, Sport } from '@rank-app/shared'
+import { GenderType, MatchType, ScheduledMatch, ScheduleStatus, Sport } from '@rank-app/shared'
+import { useAuth } from '@/contexts/auth-context'
 import {
   GENDER_TYPE_LABEL,
   MATCH_TYPE_LABEL,
@@ -23,29 +28,58 @@ const STATUS_LABEL: Record<ScheduleStatus, string> = {
   [ScheduleStatus.COMPLETED]: 'Concluído',
 }
 
-export default async function SchedulePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ sport?: string; matchType?: string; genderType?: string; page?: string }>
-}) {
-  const params = await searchParams
-  const page = Number(params.page ?? 1)
+export default function SchedulePage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const { player, isAuthenticated } = useAuth()
 
-  const { data: schedules, total } = await getSchedules({
-    sport: params.sport as Sport | undefined,
-    matchType: params.matchType as MatchType | undefined,
-    genderType: params.genderType as GenderType | undefined,
-    page,
-  })
+  const sport = (searchParams.get('sport') as Sport | null) ?? undefined
+  const matchType = (searchParams.get('matchType') as MatchType | null) ?? undefined
+  const genderType = (searchParams.get('genderType') as GenderType | null) ?? undefined
+  const page = Number(searchParams.get('page') ?? 1)
+
+  const [schedules, setSchedules] = useState<ScheduledMatch[]>([])
+  const [total, setTotal] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  // Auto-filter to player's sport on first load when no sport param is set
+  useEffect(() => {
+    if (isAuthenticated && player?.sport && !searchParams.get('sport')) {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('sport', player.sport)
+      router.replace(`/schedule?${params.toString()}`)
+    }
+  }, [isAuthenticated, player?.sport, searchParams, router])
+
+  useEffect(() => {
+    setLoading(true)
+    getSchedules({ sport, matchType, genderType, page })
+      .then((r) => { setSchedules(r.data); setTotal(r.total) })
+      .finally(() => setLoading(false))
+  }, [sport, matchType, genderType, page])
+
+  function buildUrl(overrides: Record<string, string | undefined>) {
+    const merged: Record<string, string> = {}
+    searchParams.forEach((v, k) => { merged[k] = v })
+    Object.entries(overrides).forEach(([k, v]) => {
+      if (v === undefined) delete merged[k]
+      else merged[k] = v
+    })
+    delete merged.page
+    const qs = new URLSearchParams(merged).toString()
+    return `/schedule${qs ? `?${qs}` : ''}`
+  }
 
   return (
     <>
       <Header />
       <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Partidas Agendadas</h1>
-            <p className="text-sm text-gray-500 mt-1">{total} partida(s) encontrada(s)</p>
+            {isAuthenticated && player?.sport && !searchParams.get('sport') ? null : (
+              <p className="text-sm text-gray-500 mt-1">{total} partida(s) encontrada(s)</p>
+            )}
           </div>
           <Link
             href="/schedule/new"
@@ -55,12 +89,29 @@ export default async function SchedulePage({
           </Link>
         </div>
 
-        {/* Filtros de esporte */}
-        <div className="flex gap-2 mb-3 flex-wrap">
+        {/* Sport context banner for logged-in users */}
+        {isAuthenticated && player?.sport && (
+          <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
+            <span>
+              Mostrando:{' '}
+              <strong className="text-brand">
+                {sport ? SPORT_LABEL[sport] : SPORT_LABEL[player.sport]}
+              </strong>
+            </span>
+            {sport !== undefined && (
+              <Link href="/schedule" className="text-xs text-brand hover:underline">
+                (ver todos os esportes)
+              </Link>
+            )}
+          </div>
+        )}
+
+        {/* Sport filter */}
+        <div className="flex gap-1.5 mb-3 flex-wrap">
           <Link
-            href="/schedule"
+            href={buildUrl({ sport: undefined })}
             className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-              !params.sport ? 'bg-brand text-white border-brand' : 'border-gray-300 text-gray-600 hover:border-brand'
+              !sport ? 'bg-brand text-white border-brand' : 'border-gray-300 text-gray-600 hover:border-brand'
             }`}
           >
             Todos
@@ -68,9 +119,9 @@ export default async function SchedulePage({
           {SPORT_OPTIONS.map((o) => (
             <Link
               key={o.value}
-              href={`/schedule?sport=${o.value}${params.matchType ? `&matchType=${params.matchType}` : ''}${params.genderType ? `&genderType=${params.genderType}` : ''}`}
+              href={buildUrl({ sport: o.value })}
               className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                params.sport === o.value
+                sport === o.value
                   ? 'bg-brand text-white border-brand'
                   : 'border-gray-300 text-gray-600 hover:border-brand'
               }`}
@@ -80,14 +131,14 @@ export default async function SchedulePage({
           ))}
         </div>
 
-        {/* Filtros de modalidade e gênero */}
-        <div className="flex gap-2 mb-6 flex-wrap">
+        {/* Format + gender filter */}
+        <div className="flex gap-1.5 mb-6 flex-wrap">
           {(['', MatchType.INDIVIDUAL, MatchType.DOUBLES, MatchType.TEAM] as const).map((mt) => (
             <Link
               key={mt || 'all-mt'}
-              href={`/schedule?${params.sport ? `sport=${params.sport}&` : ''}${mt ? `matchType=${mt}` : ''}${params.genderType ? `&genderType=${params.genderType}` : ''}`}
+              href={buildUrl({ matchType: mt || undefined })}
               className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                (params.matchType === mt || (!params.matchType && !mt))
+                (matchType === mt || (!matchType && !mt))
                   ? 'bg-blue-600 text-white border-blue-600'
                   : 'border-gray-300 text-gray-600 hover:border-blue-400'
               }`}
@@ -95,12 +146,12 @@ export default async function SchedulePage({
               {mt ? MATCH_TYPE_LABEL[mt] : 'Qualquer formato'}
             </Link>
           ))}
-          {['', GenderType.MIXED, GenderType.MALE, GenderType.FEMALE].map((gt) => (
+          {(['' , GenderType.MIXED, GenderType.MALE, GenderType.FEMALE] as const).map((gt) => (
             <Link
               key={gt || 'all-gt'}
-              href={`/schedule?${params.sport ? `sport=${params.sport}&` : ''}${params.matchType ? `matchType=${params.matchType}&` : ''}${gt ? `genderType=${gt}` : ''}`}
+              href={buildUrl({ genderType: gt || undefined })}
               className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                (params.genderType === gt || (!params.genderType && !gt))
+                (genderType === gt || (!genderType && !gt))
                   ? 'bg-purple-600 text-white border-purple-600'
                   : 'border-gray-300 text-gray-600 hover:border-purple-400'
               }`}
@@ -110,7 +161,9 @@ export default async function SchedulePage({
           ))}
         </div>
 
-        {schedules.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16 text-gray-400">Carregando...</div>
+        ) : schedules.length === 0 ? (
           <div className="text-center py-16 text-gray-400">
             <p className="text-4xl mb-3">📅</p>
             <p>Nenhuma partida agendada</p>

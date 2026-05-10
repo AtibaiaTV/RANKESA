@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import { PaginatedResponse, ScheduledMatch } from '@tennis-rank/shared'
+import { PaginatedResponse, ScheduledMatch } from '@rank-app/shared'
 
 export function getSchedules(params?: {
   sport?: string

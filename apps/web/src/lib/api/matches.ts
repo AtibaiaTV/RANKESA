@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import { Match, PaginatedResponse } from '@tennis-rank/shared'
+import { Match, PaginatedResponse } from '@rank-app/shared'
 
 export function getMatches(params?: { playerId?: string; status?: string; page?: number }) {
   const qs = new URLSearchParams(

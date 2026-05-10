@@ -1,6 +1,6 @@
 import { IsEnum, IsInt, IsMongoId, IsOptional, Max, Min } from 'class-validator'
 import { Type } from 'class-transformer'
-import { MatchStatus, Sport } from '@tennis-rank/shared'
+import { MatchStatus, Sport } from '@rank-app/shared'
 
 export class QueryMatchesDto {
   @IsMongoId()

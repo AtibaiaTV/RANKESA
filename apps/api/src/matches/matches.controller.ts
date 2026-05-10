@@ -17,7 +17,7 @@ import { QueryMatchesDto } from './dto/query-matches.dto'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
-import { SystemRole } from '@tennis-rank/shared'
+import { SystemRole } from '@rank-app/shared'
 
 @ApiTags('Matches')
 @Controller('matches')

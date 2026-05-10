@@ -8,27 +8,12 @@ import { createMatch } from '@/lib/api/matches'
 import { getPlayers } from '@/lib/api/players'
 import { Player, Sport } from '@rank-app/shared'
 import { Header } from '@/components/layout/header'
+import { SPORT_OPTIONS } from '@/lib/sports'
 
 export default function NewMatchPage() {
   const { player, token, isAuthenticated } = useAuth()
   const router = useRouter()
   const [players, setPlayers] = useState<Player[]>([])
-  const SPORT_OPTIONS = [
-    { value: Sport.TENNIS, label: '🎾 Tênis' },
-    { value: Sport.PADEL, label: '🏓 Padel' },
-    { value: Sport.BEACH_TENNIS, label: '🏖️ Beach Tennis' },
-    { value: Sport.SQUASH, label: '🟡 Squash' },
-    { value: Sport.BADMINTON, label: '🏸 Badminton' },
-    { value: Sport.TABLE_TENNIS, label: '🏓 Tênis de Mesa' },
-    { value: Sport.VOLLEYBALL, label: '🏐 Vôlei' },
-    { value: Sport.BEACH_VOLLEYBALL, label: '🏖️ Vôlei de Areia' },
-    { value: Sport.FOOTVOLLEY, label: '🦶 Futevôlei' },
-    { value: Sport.FUTSAL, label: '👟 Futsal' },
-    { value: Sport.BASKETBALL, label: '🏀 Basquete' },
-    { value: Sport.FOOTBALL, label: '⚽ Futebol' },
-    { value: Sport.HANDBALL, label: '🤾 Handebol' },
-    { value: Sport.CHESS, label: '♟️ Xadrez' },
-  ]
 
   const [form, setForm] = useState({
     sport: Sport.TENNIS,
@@ -45,7 +30,10 @@ export default function NewMatchPage() {
       router.push('/login')
       return
     }
-    getPlayers({ limit: 100 }).then((r) =>
+    if (player?.sport) {
+      setForm((f) => ({ ...f, sport: player.sport as Sport }))
+    }
+    getPlayers({ sport: player?.sport as Sport | undefined, limit: 100 }).then((r) =>
       setPlayers(r.data.filter((p) => p._id !== player?._id)),
     )
   }, [isAuthenticated, player, router])

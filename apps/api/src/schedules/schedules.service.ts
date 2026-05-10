@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
-import { ScheduleStatus } from '@tennis-rank/shared'
+import { ScheduleStatus } from '@rank-app/shared'
 import { ScheduledMatch, ScheduledMatchDocument } from './schemas/scheduled-match.schema'
 import { CreateScheduleDto } from './dto/create-schedule.dto'
 import { QuerySchedulesDto } from './dto/query-schedules.dto'

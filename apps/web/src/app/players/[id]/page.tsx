@@ -3,6 +3,7 @@ import { getPlayer } from '@/lib/api/players'
 import { getMatches } from '@/lib/api/matches'
 import { Header } from '@/components/layout/header'
 import { PlayerLevel, MatchStatus } from '@rank-app/shared'
+import { SPORT_LABEL } from '@/lib/sports'
 
 const LEVEL_LABELS: Record<PlayerLevel, string> = {
   [PlayerLevel.BEGINNER]: 'Iniciante',
@@ -43,8 +44,11 @@ export default async function PlayerProfilePage({
             </div>
             <div>
               <h1 className="text-xl font-bold text-gray-900">{player.name}</h1>
-              <p className="text-gray-500">
-                {player.city} · {LEVEL_LABELS[player.level]}
+              <p className="text-brand font-medium text-sm">{SPORT_LABEL[player.sport]}</p>
+              <p className="text-gray-500 text-sm">
+                {player.city}{player.state && `, ${player.state}`}
+                {' · '}{LEVEL_LABELS[player.level]}
+                {player.venue && <span className="text-gray-400"> · {player.venue}</span>}
               </p>
             </div>
           </div>

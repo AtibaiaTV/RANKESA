@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
-import { Gender, PlayerLevel, Sport, SystemRole } from '@tennis-rank/shared'
+import { Gender, PlayerLevel, Sport, SystemRole } from '@rank-app/shared'
 
 export type PlayerDocument = HydratedDocument<Player>
 
@@ -18,11 +18,29 @@ export class Player {
   @Prop({ required: true })
   city: string
 
+  @Prop({ required: true, enum: Sport })
+  sport: Sport
+
   @Prop({ required: true, enum: PlayerLevel, default: PlayerLevel.BEGINNER })
   level: PlayerLevel
 
   @Prop({ enum: Gender })
   gender?: Gender
+
+  @Prop()
+  venue?: string
+
+  @Prop()
+  region?: string
+
+  @Prop()
+  state?: string
+
+  @Prop({ default: 'Brasil' })
+  country?: string
+
+  @Prop()
+  birthDate?: Date
 
   @Prop({ required: true, default: 1000 })
   elo: number
@@ -37,10 +55,7 @@ export class Player {
   matchesPlayed: number
 
   @Prop({ required: true, default: 100 })
-  coins: number
-
-  @Prop({ type: [String], enum: Sport, default: [] })
-  sports: Sport[]
+  boletas: number
 
   @Prop({ required: true, select: false })
   password: string
@@ -51,4 +66,7 @@ export class Player {
 
 export const PlayerSchema = SchemaFactory.createForClass(Player)
 PlayerSchema.index({ elo: -1 })
+PlayerSchema.index({ sport: 1, elo: -1 })
 PlayerSchema.index({ city: 1, elo: -1 })
+PlayerSchema.index({ state: 1, elo: -1 })
+PlayerSchema.index({ country: 1, elo: -1 })

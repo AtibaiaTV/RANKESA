@@ -1,5 +1,5 @@
 import { IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsString } from 'class-validator'
-import { Sport } from '@tennis-rank/shared'
+import { Sport } from '@rank-app/shared'
 
 export class CreateMatchDto {
   @IsEnum(Sport)

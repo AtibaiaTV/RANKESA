@@ -8,7 +8,7 @@ import {
   Max,
   Min,
 } from 'class-validator'
-import { GenderType, MatchType, Sport } from '@tennis-rank/shared'
+import { GenderType, MatchType, Sport } from '@rank-app/shared'
 
 export class CreateScheduleDto {
   @IsEnum(Sport)

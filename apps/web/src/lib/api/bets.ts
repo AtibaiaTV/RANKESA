@@ -1,5 +1,5 @@
 import { apiFetch } from './client'
-import { Bet } from '@tennis-rank/shared'
+import { Bet } from '@rank-app/shared'
 
 export function getBetsForMatch(matchId: string) {
   return apiFetch<Bet[]>(`/matches/${matchId}/bets`)

@@ -35,7 +35,15 @@ export default function NewSchedulePage() {
 
   useEffect(() => {
     if (!isAuthenticated) router.push('/login')
-  }, [isAuthenticated, router])
+    if (player?.sport) {
+      setForm((f) => ({
+        ...f,
+        sport: player.sport as Sport,
+        city: player.city ?? f.city,
+        matchType: TEAM_SPORTS.has(player.sport as Sport) ? MatchType.TEAM : MatchType.INDIVIDUAL,
+      }))
+    }
+  }, [isAuthenticated, router, player])
 
   // Atualiza maxPlayers sugerido quando sport ou matchType mudam
   useEffect(() => {

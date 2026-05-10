@@ -18,7 +18,7 @@
     "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "@tennis-rank/shared": ["../../packages/shared/src"]
+      "@rank-app/shared": ["../../packages/shared/src"]
     }
   }
 }

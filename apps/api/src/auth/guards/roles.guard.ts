@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import { SystemRole } from '@tennis-rank/shared'
+import { SystemRole } from '@rank-app/shared'
 import { ROLES_KEY } from '../decorators/roles.decorator'
 
 @Injectable()

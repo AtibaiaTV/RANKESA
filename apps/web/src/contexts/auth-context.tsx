@@ -1,7 +1,7 @@
 'use client'
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { Player } from '@tennis-rank/shared'
+import { Player } from '@rank-app/shared'
 
 interface AuthContextValue {
   player: Player | null

@@ -21,11 +21,47 @@ export class PlayersService {
   }
 
   async findAll(query: QueryPlayersDto) {
-    const { city, level, sport, page = 1, limit = 20 } = query
+    const {
+      sport,
+      city,
+      venue,
+      region,
+      state,
+      country,
+      level,
+      gender,
+      minAge,
+      maxAge,
+      page = 1,
+      limit = 20,
+    } = query
+
     const filter: Record<string, unknown> = {}
+
+    if (sport) filter.sport = sport
     if (city) filter.city = { $regex: city, $options: 'i' }
+    if (venue) filter.venue = { $regex: venue, $options: 'i' }
+    if (region) filter.region = { $regex: region, $options: 'i' }
+    if (state) filter.state = { $regex: state, $options: 'i' }
+    if (country) filter.country = { $regex: country, $options: 'i' }
     if (level) filter.level = level
-    if (sport) filter.sports = sport
+    if (gender) filter.gender = gender
+
+    if (minAge !== undefined || maxAge !== undefined) {
+      const now = new Date()
+      const birthDateFilter: Record<string, Date> = {}
+      if (minAge !== undefined) {
+        const maxBirth = new Date(now)
+        maxBirth.setFullYear(now.getFullYear() - minAge)
+        birthDateFilter.$lte = maxBirth
+      }
+      if (maxAge !== undefined) {
+        const minBirth = new Date(now)
+        minBirth.setFullYear(now.getFullYear() - maxAge - 1)
+        birthDateFilter.$gt = minBirth
+      }
+      filter.birthDate = birthDateFilter
+    }
 
     const [data, total] = await Promise.all([
       this.playerModel

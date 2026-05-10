@@ -231,12 +231,12 @@ export default function MatchDetailPage() {
                 </div>
                 <div>
                   <label className="block text-xs text-gray-600 mb-1">
-                    Quantidade de moedas (saldo: {player?.coins ?? 0})
+                    Boletas a apostar (saldo: {player?.boletas ?? 0})
                   </label>
                   <input
                     type="number"
                     min={1}
-                    max={player?.coins ?? 0}
+                    max={player?.boletas ?? 0}
                     required
                     value={betAmount}
                     onChange={(e) => setBetAmount(Number(e.target.value))}
@@ -261,7 +261,7 @@ export default function MatchDetailPage() {
               <p className="font-medium text-blue-800">Sua aposta</p>
               <p className="text-blue-600 mt-1">
                 {typeof myBet.predictedWinner === 'object' ? myBet.predictedWinner.name : '—'} ·{' '}
-                {myBet.amount} moedas
+                {myBet.amount} boletas
               </p>
               <span className={`text-xs px-2 py-0.5 rounded-full mt-1 inline-block ${BET_STATUS_LABELS[myBet.status].cls}`}>
                 {BET_STATUS_LABELS[myBet.status].label}
