@@ -1,5 +1,5 @@
 {
-  "name": "tennis-rank",
+  "name": "rank",
   "private": true,
   "scripts": {
     "dev": "turbo run dev",

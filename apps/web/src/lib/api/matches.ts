@@ -1,7 +1,7 @@
 import { apiFetch } from './client'
-import { Match, PaginatedResponse } from '@rank-app/shared'
+import { Match, MatchComment, PaginatedResponse } from '@rank-app/shared'
 
-export function getMatches(params?: { playerId?: string; status?: string; page?: number }) {
+export function getMatches(params?: { playerId?: string; status?: string; page?: number; limit?: number }) {
   const qs = new URLSearchParams(
     Object.entries(params ?? {})
       .filter(([, v]) => v !== undefined)
@@ -16,7 +16,7 @@ export function getMatch(id: string) {
 
 export function createMatch(
   token: string,
-  data: { opponentId: string; winnerId: string; score: string; date: string },
+  data: { sport?: string; opponentId: string; winnerId: string; score: string; date: string; scheduledMatchId?: string },
 ) {
   return apiFetch<Match>('/matches', {
     method: 'POST',
@@ -42,5 +42,17 @@ export function adminResolve(token: string, id: string, winnerId: string) {
     method: 'POST',
     token,
     body: JSON.stringify({ winnerId }),
+  })
+}
+
+export function getMatchComments(token: string, id: string) {
+  return apiFetch<MatchComment[]>(`/matches/${id}/comments`, { token })
+}
+
+export function addMatchComment(token: string, id: string, content: string) {
+  return apiFetch<MatchComment>(`/matches/${id}/comments`, {
+    method: 'POST',
+    token,
+    body: JSON.stringify({ content }),
   })
 }

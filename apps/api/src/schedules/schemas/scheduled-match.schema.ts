@@ -39,11 +39,47 @@ export class ScheduledMatch {
   @Prop({ required: true, min: 2 })
   maxPlayers: number
 
+  /** Approved participants (includes organizer) */
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Player' }], default: [] })
   players: Types.ObjectId[]
 
+  /** Candidates awaiting organizer approval */
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Player' }], default: [] })
+  pendingPlayers: Types.ObjectId[]
+
   @Prop({ required: true, enum: ScheduleStatus, default: ScheduleStatus.OPEN })
   status: ScheduleStatus
+
+  @Prop({ required: true, default: false })
+  resultRegistered: boolean
+
+  /** MVP votes cast by approved participants after the match */
+  @Prop({
+    type: [
+      {
+        voter:   { type: Types.ObjectId, ref: 'Player' },
+        nominee: { type: Types.ObjectId, ref: 'Player' },
+      },
+    ],
+    default: [],
+  })
+  mvpVotes: { voter: Types.ObjectId; nominee: Types.ObjectId }[]
+
+  /** Player elected as MVP after voting is resolved */
+  @Prop({ type: Types.ObjectId, ref: 'Player' })
+  mvpWinner?: Types.ObjectId
+
+  /** Optional cost sharing — value in BRL per player */
+  @Prop({ min: 0 })
+  costPerPlayer?: number
+
+  /** PIX key used to collect the cost from players */
+  @Prop()
+  pixKey?: string
+
+  /** Human-readable description of what the cost covers */
+  @Prop()
+  costDescription?: string
 }
 
 export const ScheduledMatchSchema = SchemaFactory.createForClass(ScheduledMatch)

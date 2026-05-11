@@ -23,6 +23,10 @@ export class QuerySchedulesDto {
   @IsOptional()
   city?: string
 
+  @IsString()
+  @IsOptional()
+  playerId?: string
+
   @IsDateString()
   @IsOptional()
   from?: string

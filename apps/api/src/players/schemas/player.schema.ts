@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose'
 import { HydratedDocument } from 'mongoose'
-import { Gender, PlayerLevel, Sport, SystemRole } from '@rank-app/shared'
+import { Gender, PlayerLevel, Sport, SubscriptionStatus, SystemRole } from '@rank-app/shared'
 
 export type PlayerDocument = HydratedDocument<Player>
 
@@ -42,6 +42,9 @@ export class Player {
   @Prop()
   birthDate?: Date
 
+  @Prop()
+  phone?: string
+
   @Prop({ required: true, default: 1000 })
   elo: number
 
@@ -62,6 +65,29 @@ export class Player {
 
   @Prop({ required: true, enum: SystemRole, default: SystemRole.PLAYER })
   role: SystemRole
+
+  /* ── Suspensão / Fair Play ── */
+  @Prop({ required: true, default: 0 })
+  suspensionCount: number
+
+  @Prop()
+  suspendedUntil?: Date
+
+  @Prop({ required: true, default: false })
+  flaggedForBan: boolean
+
+  /* ── Asaas / Assinatura ── */
+  @Prop()
+  asaasCustomerId?: string
+
+  @Prop()
+  asaasSubscriptionId?: string
+
+  @Prop({ required: true, enum: SubscriptionStatus, default: SubscriptionStatus.TRIAL })
+  subscriptionStatus: SubscriptionStatus
+
+  @Prop()
+  trialEndsAt?: Date
 }
 
 export const PlayerSchema = SchemaFactory.createForClass(Player)

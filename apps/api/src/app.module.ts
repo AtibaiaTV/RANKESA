@@ -8,6 +8,9 @@ import { MatchesModule } from './matches/matches.module'
 import { RankingsModule } from './rankings/rankings.module'
 import { BetsModule } from './bets/bets.module'
 import { SchedulesModule } from './schedules/schedules.module'
+import { AsaasModule } from './asaas/asaas.module'
+import { ReportsModule } from './reports/reports.module'
+import { BoletasPurchasesModule } from './boletas-purchases/boletas-purchases.module'
 
 @Module({
   imports: [
@@ -25,6 +28,9 @@ import { SchedulesModule } from './schedules/schedules.module'
     RankingsModule,
     BetsModule,
     SchedulesModule,
+    AsaasModule,
+    ReportsModule,
+    BoletasPurchasesModule,
   ],
 })
 export class AppModule {}

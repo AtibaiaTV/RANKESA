@@ -1,5 +1,5 @@
-import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator'
-import { Gender, PlayerLevel, Sport } from '@rank-app/shared'
+import { IsDateString, IsEnum, IsOptional, IsString, Matches } from 'class-validator'
+import { Gender, PlayerLevel, Sport, SubscriptionStatus } from '@rank-app/shared'
 
 export class UpdatePlayerDto {
   @IsString()
@@ -45,4 +45,17 @@ export class UpdatePlayerDto {
   @IsDateString()
   @IsOptional()
   birthDate?: string
+
+  @IsString()
+  @IsOptional()
+  @Matches(/^\+?[\d\s\-().]{7,20}$/, { message: 'Número de telefone inválido' })
+  phone?: string
+
+  /* ── Asaas (internal — not exposed via HTTP) ── */
+  asaasCustomerId?: string
+  asaasSubscriptionId?: string
+
+  @IsEnum(SubscriptionStatus)
+  @IsOptional()
+  subscriptionStatus?: SubscriptionStatus
 }

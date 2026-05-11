@@ -18,8 +18,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
-    const stored = localStorage.getItem('tennis_token')
-    const storedPlayer = localStorage.getItem('tennis_player')
+    const stored = localStorage.getItem('rank_token')
+    const storedPlayer = localStorage.getItem('rank_player')
     if (stored && storedPlayer) {
       setToken(stored)
       setPlayer(JSON.parse(storedPlayer) as Player)
@@ -29,15 +29,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback((p: Player, t: string) => {
     setPlayer(p)
     setToken(t)
-    localStorage.setItem('tennis_token', t)
-    localStorage.setItem('tennis_player', JSON.stringify(p))
+    localStorage.setItem('rank_token', t)
+    localStorage.setItem('rank_player', JSON.stringify(p))
   }, [])
 
   const logout = useCallback(() => {
     setPlayer(null)
     setToken(null)
-    localStorage.removeItem('tennis_token')
-    localStorage.removeItem('tennis_player')
+    localStorage.removeItem('rank_token')
+    localStorage.removeItem('rank_player')
   }, [])
 
   return (

@@ -11,6 +11,7 @@ import {
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger'
 import { MatchesService } from './matches.service'
 import { CreateMatchDto } from './dto/create-match.dto'
+import { CreateCommentDto } from './dto/create-comment.dto'
 import { DisputeMatchDto } from './dto/dispute-match.dto'
 import { ResolveDisputeDto } from './dto/resolve-dispute.dto'
 import { QueryMatchesDto } from './dto/query-matches.dto'
@@ -68,5 +69,26 @@ export class MatchesController {
   @Post(':id/admin-resolve')
   adminResolve(@Param('id') id: string, @Body() dto: ResolveDisputeDto) {
     return this.matchesService.adminResolve(id, dto)
+  }
+
+  /** Lista os comentários de uma partida — apenas participantes e admin */
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/comments')
+  getComments(@Param('id') id: string) {
+    return this.matchesService.getComments(id)
+  }
+
+  /** Adiciona comentário — apenas participantes e admin */
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/comments')
+  addComment(
+    @Param('id') id: string,
+    @Request() req: { user: { sub: string; role: SystemRole } },
+    @Body() dto: CreateCommentDto,
+  ) {
+    const isAdmin = req.user.role === SystemRole.ADMIN
+    return this.matchesService.addComment(id, req.user.sub, dto, isAdmin)
   }
 }

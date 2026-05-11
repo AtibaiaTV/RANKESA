@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsInt,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   Max,
@@ -47,4 +48,18 @@ export class CreateScheduleDto {
   @Min(2)
   @Max(50)
   maxPlayers: number
+
+  @IsNumber()
+  @Min(0)
+  @Max(10000)
+  @IsOptional()
+  costPerPlayer?: number
+
+  @IsString()
+  @IsOptional()
+  pixKey?: string
+
+  @IsString()
+  @IsOptional()
+  costDescription?: string
 }

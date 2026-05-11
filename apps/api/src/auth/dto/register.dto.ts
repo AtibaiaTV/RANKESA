@@ -38,6 +38,10 @@ export class RegisterDto {
 
   @IsString()
   @IsOptional()
+  avatar?: string
+
+  @IsString()
+  @IsOptional()
   venue?: string
 
   @IsString()

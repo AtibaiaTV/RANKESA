@@ -21,8 +21,15 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
     })
 
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}))
-      throw new Error(err.message ?? res.statusText)
+      const text = await res.text().catch(() => '')
+      let message: string
+      try {
+        const err = JSON.parse(text)
+        message = Array.isArray(err.message) ? err.message[0] : (err.message ?? res.statusText)
+      } catch {
+        message = text || res.statusText
+      }
+      throw new Error(message)
     }
 
     return res.json() as Promise<T>

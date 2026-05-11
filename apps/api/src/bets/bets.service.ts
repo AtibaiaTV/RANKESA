@@ -20,6 +20,13 @@ export class BetsService {
   ) {}
 
   async place(matchId: string, bettorId: string, dto: PlaceBetDto): Promise<BetDocument> {
+    // Verifica suspensão
+    const bettorCheck = await this.playerModel.findById(bettorId).lean()
+    if (bettorCheck?.suspendedUntil && new Date(bettorCheck.suspendedUntil) > new Date()) {
+      const until = new Date(bettorCheck.suspendedUntil).toLocaleDateString('pt-BR')
+      throw new BadRequestException(`Conta suspensa até ${until}`)
+    }
+
     const match = await this.matchModel.findById(matchId)
     if (!match) throw new NotFoundException('Partida não encontrada')
     if (match.status !== MatchStatus.PENDING_REVIEW) {
@@ -64,7 +71,7 @@ export class BetsService {
       .find({ match: new Types.ObjectId(matchId) })
       .populate('bettor', 'name avatar')
       .populate('predictedWinner', 'name')
-      .lean() as Promise<BetDocument[]>
+      .lean() as unknown as BetDocument[]
   }
 
   async findByPlayer(playerId: string): Promise<BetDocument[]> {
@@ -73,7 +80,7 @@ export class BetsService {
       .populate('match', 'sport score date status')
       .populate('predictedWinner', 'name')
       .sort({ createdAt: -1 })
-      .lean() as Promise<BetDocument[]>
+      .lean() as unknown as BetDocument[]
   }
 
   async resolveForMatch(matchId: string, winnerId: Types.ObjectId): Promise<void> {

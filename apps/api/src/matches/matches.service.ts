@@ -6,26 +6,36 @@ import {
 } from '@nestjs/common'
 import { InjectModel } from '@nestjs/mongoose'
 import { Model, Types } from 'mongoose'
-import { calculateElo, MatchStatus } from '@rank-app/shared'
+import { BOLETAS_REWARDS, calculateElo, MatchStatus, ReportCategory } from '@rank-app/shared'
 import { Match, MatchDocument } from './schemas/match.schema'
+import { MatchComment, MatchCommentDocument } from './schemas/match-comment.schema'
 import { CreateMatchDto } from './dto/create-match.dto'
+import { CreateCommentDto } from './dto/create-comment.dto'
 import { DisputeMatchDto } from './dto/dispute-match.dto'
 import { ResolveDisputeDto } from './dto/resolve-dispute.dto'
 import { QueryMatchesDto } from './dto/query-matches.dto'
 import { PlayersService } from '../players/players.service'
 import { MailService } from '../mail/mail.service'
 import { BetsService } from '../bets/bets.service'
+import { SchedulesService } from '../schedules/schedules.service'
+import { ReportsService } from '../reports/reports.service'
 
 @Injectable()
 export class MatchesService {
   constructor(
     @InjectModel(Match.name) private readonly matchModel: Model<MatchDocument>,
+    @InjectModel(MatchComment.name) private readonly commentModel: Model<MatchCommentDocument>,
     private readonly playersService: PlayersService,
     private readonly mailService: MailService,
     private readonly betsService: BetsService,
+    private readonly schedulesService: SchedulesService,
+    private readonly reportsService: ReportsService,
   ) {}
 
   async create(registeredById: string, dto: CreateMatchDto): Promise<MatchDocument> {
+    // Verifica suspensão antes de qualquer operação
+    await this.playersService.checkSuspension(registeredById)
+
     const [registeredBy, opponent] = await Promise.all([
       this.playersService.findById(registeredById),
       this.playersService.findById(dto.opponentId),
@@ -49,9 +59,18 @@ export class MatchesService {
       registeredBy: player1Id,
       status: MatchStatus.PENDING_REVIEW,
       eloApplied: false,
+      ...(dto.scheduledMatchId && { scheduledMatchRef: new Types.ObjectId(dto.scheduledMatchId) }),
     })
 
     const saved = await match.save()
+
+    // Marca resultado como registrado no agendamento (fire-and-forget)
+    if (dto.scheduledMatchId) {
+      this.schedulesService.markResultRegistered(dto.scheduledMatchId).catch(() => undefined)
+    }
+
+    // Recompensa boletas por registrar partida (fire-and-forget)
+    this.playersService.addBoletas(registeredById, BOLETAS_REWARDS.MATCH_REGISTER).catch(() => undefined)
 
     // Notifica o adversário por email (fire-and-forget)
     this.mailService
@@ -115,6 +134,9 @@ export class MatchesService {
     match.confirmedAt = new Date()
     await match.save()
 
+    // Recompensa boletas por confirmar a partida do adversário
+    this.playersService.addBoletas(requesterId, BOLETAS_REWARDS.MATCH_CONFIRM).catch(() => undefined)
+
     await this.applyElo(match)
     return match
   }
@@ -149,10 +171,30 @@ export class MatchesService {
       throw new BadRequestException('O vencedor deve ser um dos jogadores da partida')
     }
 
+    // Se o admin corrigiu o vencedor, quem registrou o resultado falso perde boletas
+    const originalWinner = match.winner
+    const winnerChanged = !winnerId.equals(originalWinner)
+
     match.winner = winnerId
     match.status = MatchStatus.CONFIRMED
     match.confirmedAt = new Date()
     await match.save()
+
+    if (winnerChanged) {
+      // Cria relatório automático de fraude com suspensão progressiva
+      this.reportsService
+        .create(
+          String(match.registeredBy), // reporter = sistema (usa o próprio)
+          {
+            reportedPlayerId: String(match.registeredBy),
+            matchId: String(match._id),
+            category: ReportCategory.FAKE_RESULT,
+            reason: 'Resultado registrado de forma incorreta — corrigido pelo administrador.',
+          },
+          true, // autoSuspend = true → aplica -50 boletas + suspensão progressiva
+        )
+        .catch(() => undefined)
+    }
 
     await this.applyElo(match)
     return match
@@ -197,10 +239,51 @@ export class MatchesService {
       newLoserElo,
     )
 
+    // Recompensa boletas pela vitória
+    await this.playersService.addBoletas(String(match.winner), BOLETAS_REWARDS.MATCH_WIN)
+
     match.eloApplied = true
     await match.save()
 
     // Resolve bets for this match
     await this.betsService.resolveForMatch(String(match._id), match.winner as Types.ObjectId)
+  }
+
+  // ── Canal de comunicação ────────────────────────────────────────────────
+
+  async getComments(matchId: string) {
+    return this.commentModel
+      .find({ matchRef: new Types.ObjectId(matchId) })
+      .populate('author', 'name avatar city role')
+      .sort({ createdAt: 1 })
+      .lean()
+  }
+
+  async addComment(
+    matchId: string,
+    authorId: string,
+    dto: CreateCommentDto,
+    isAdmin: boolean,
+  ): Promise<MatchCommentDocument> {
+    const match = await this.matchModel.findById(matchId)
+    if (!match) throw new NotFoundException('Partida não encontrada')
+
+    // Apenas participantes da partida ou admin podem comentar
+    const authorObjId = new Types.ObjectId(authorId)
+    const isParticipant =
+      match.player1.equals(authorObjId) || match.player2.equals(authorObjId)
+
+    if (!isParticipant && !isAdmin) {
+      throw new ForbiddenException('Apenas os jogadores da partida podem comentar')
+    }
+
+    const comment = new this.commentModel({
+      matchRef: new Types.ObjectId(matchId),
+      author: authorObjId,
+      content: dto.content,
+      isAdminMessage: isAdmin,
+    })
+
+    return comment.save()
   }
 }

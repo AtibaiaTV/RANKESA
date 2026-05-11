@@ -1,7 +1,6 @@
 import { NestFactory } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger'
-import { ApiReferenceModule } from '@scalar/nestjs-api-reference'
 import { AppModule } from './app.module'
 
 async function bootstrap() {
@@ -28,9 +27,7 @@ async function bootstrap() {
     .build()
 
   const document = SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('swagger', app, document)
-
-  app.use('/docs', ApiReferenceModule.handler({ spec: { content: document } }))
+  SwaggerModule.setup('docs', app, document)
 
   const port = process.env.PORT ?? 3001
   await app.listen(port)

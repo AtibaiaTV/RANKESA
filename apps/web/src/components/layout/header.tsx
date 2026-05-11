@@ -1,53 +1,61 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { useAuth } from '@/contexts/auth-context'
+import { usePathname } from 'next/navigation'
 
 export function Header() {
   const { isAuthenticated, player, logout } = useAuth()
+  const pathname = usePathname()
+
+  const navLink = (href: string, label: string) => {
+    const active = pathname === href || pathname.startsWith(href + '/')
+    return (
+      <Link href={href} className={`text-sm transition-colors ${
+        active ? 'text-gray-900 font-semibold' : 'text-gray-400 hover:text-gray-700'
+      }`}>
+        {label}
+      </Link>
+    )
+  }
 
   return (
-    <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-      <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-1.5">
-          <span className="font-black text-xl tracking-tight text-brand">RANK</span>
-          <span className="w-2 h-2 rounded-full bg-accent" />
-        </Link>
-        <nav className="flex items-center gap-4 text-sm">
-          <Link href="/ranking" className="text-gray-600 hover:text-brand">
-            Ranking
+    <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
+      <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="flex items-center gap-8">
+          <Link href="/">
+            <Image src="/logo-rank.png" alt="RANK" width={96} height={36} priority style={{ objectFit: 'contain' }} />
           </Link>
-          <Link href="/schedule" className="text-gray-600 hover:text-brand">
-            Partidas
-          </Link>
+          <nav className="hidden md:flex items-center gap-6">
+            {navLink('/ranking', 'Ranking')}
+            {navLink('/schedule', 'Partidas')}
+            {isAuthenticated && navLink('/dashboard', 'Painel')}
+          </nav>
+        </div>
+
+        <div className="flex items-center gap-4">
           {isAuthenticated ? (
             <>
-              <Link href="/dashboard" className="text-gray-600 hover:text-brand">
-                Painel
-              </Link>
-              <span className="text-gray-400">|</span>
-              <span className="text-gray-700 font-medium">{player?.name}</span>
-              <button
-                onClick={logout}
-                className="text-red-500 hover:text-red-700"
-              >
+              <span className="hidden md:block text-sm text-gray-500">{player?.name}</span>
+              <button onClick={logout}
+                className="text-sm text-gray-400 hover:text-red-400 transition-colors">
                 Sair
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="text-gray-600 hover:text-brand">
+              <Link href="/login"
+                className="text-sm text-gray-500 hover:text-gray-700 transition-colors">
                 Entrar
               </Link>
-              <Link
-                href="/register"
-                className="bg-brand text-white px-3 py-1.5 rounded-md hover:bg-brand-dark"
-              >
+              <Link href="/login"
+                className="text-sm font-semibold bg-brand text-white px-4 py-1.5 rounded-full hover:bg-brand-dark transition-colors">
                 Cadastrar
               </Link>
             </>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   )

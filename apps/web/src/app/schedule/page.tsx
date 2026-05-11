@@ -1,48 +1,47 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+export const dynamic = 'force-dynamic'
+
+import { useEffect, useState, Suspense } from 'react'
 import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { getSchedules } from '@/lib/api/schedules'
-import { Header } from '@/components/layout/header'
+import { PageLayout } from '@/components/layout/page-layout'
 import { GenderType, MatchType, ScheduledMatch, ScheduleStatus, Sport } from '@rank-app/shared'
 import { useAuth } from '@/contexts/auth-context'
-import {
-  GENDER_TYPE_LABEL,
-  MATCH_TYPE_LABEL,
-  SPORT_LABEL,
-  SPORT_OPTIONS,
-} from '@/lib/sports'
+import { GENDER_TYPE_LABEL, MATCH_TYPE_LABEL, SPORT_LABEL, SPORT_OPTIONS } from '@/lib/sports'
+import { Plus, MapPin, Clock, Users } from 'lucide-react'
 
-const STATUS_STYLE: Record<ScheduleStatus, string> = {
-  [ScheduleStatus.OPEN]: 'bg-green-100 text-green-700',
-  [ScheduleStatus.FULL]: 'bg-orange-100 text-orange-700',
-  [ScheduleStatus.CANCELLED]: 'bg-gray-100 text-gray-500',
-  [ScheduleStatus.COMPLETED]: 'bg-blue-100 text-blue-700',
+const STATUS_CONFIG: Record<ScheduleStatus, { label: string; cls: string }> = {
+  [ScheduleStatus.OPEN]:      { label: 'Aberto',    cls: 'text-accent font-semibold' },
+  [ScheduleStatus.FULL]:      { label: 'Lotado',    cls: 'text-orange-500 font-semibold' },
+  [ScheduleStatus.CANCELLED]: { label: 'Cancelado', cls: 'text-gray-300 font-medium' },
+  [ScheduleStatus.COMPLETED]: { label: 'Concluído', cls: 'text-gray-400 font-medium' },
 }
 
-const STATUS_LABEL: Record<ScheduleStatus, string> = {
-  [ScheduleStatus.OPEN]: 'Aberto',
-  [ScheduleStatus.FULL]: 'Lotado',
-  [ScheduleStatus.CANCELLED]: 'Cancelado',
-  [ScheduleStatus.COMPLETED]: 'Concluído',
-}
+const pill = (active: boolean) =>
+  `px-3 py-2 text-sm transition-colors border-l-2 ${
+    active
+      ? 'border-brand text-brand font-semibold bg-brand/5'
+      : 'border-transparent text-gray-400 hover:text-gray-700 font-normal'
+  }`
 
-export default function SchedulePage() {
+const inputCls = 'w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-brand transition-colors bg-white text-gray-700'
+
+function ScheduleContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { player, isAuthenticated } = useAuth()
 
-  const sport = (searchParams.get('sport') as Sport | null) ?? undefined
-  const matchType = (searchParams.get('matchType') as MatchType | null) ?? undefined
+  const sport      = (searchParams.get('sport')      as Sport      | null) ?? undefined
+  const matchType  = (searchParams.get('matchType')  as MatchType  | null) ?? undefined
   const genderType = (searchParams.get('genderType') as GenderType | null) ?? undefined
-  const page = Number(searchParams.get('page') ?? 1)
+  const page       = Number(searchParams.get('page') ?? 1)
 
   const [schedules, setSchedules] = useState<ScheduledMatch[]>([])
-  const [total, setTotal] = useState(0)
-  const [loading, setLoading] = useState(true)
+  const [total, setTotal]         = useState(0)
+  const [loading, setLoading]     = useState(true)
 
-  // Auto-filter to player's sport on first load when no sport param is set
   useEffect(() => {
     if (isAuthenticated && player?.sport && !searchParams.get('sport')) {
       const params = new URLSearchParams(searchParams.toString())
@@ -70,150 +69,179 @@ export default function SchedulePage() {
     return `/schedule${qs ? `?${qs}` : ''}`
   }
 
+  function navTo(url: string) { router.push(url) }
+
   return (
-    <>
-      <Header />
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">Partidas Agendadas</h1>
-            {isAuthenticated && player?.sport && !searchParams.get('sport') ? null : (
-              <p className="text-sm text-gray-500 mt-1">{total} partida(s) encontrada(s)</p>
-            )}
+    <main className="max-w-5xl mx-auto px-6 py-8">
+
+        {/* Título */}
+        <div className="mb-6">
+          <p className="text-xs text-gray-400 mb-1">Agenda</p>
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold text-gray-900">Partidas</h1>
+            <Link href="/schedule/new"
+              className="inline-flex items-center gap-2 bg-brand text-white text-sm font-bold px-4 py-2 hover:bg-brand-dark transition-colors">
+              <Plus size={14} /> Criar partida
+            </Link>
           </div>
-          <Link
-            href="/schedule/new"
-            className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-brand-dark"
-          >
-            + Criar partida
-          </Link>
         </div>
 
-        {/* Sport context banner for logged-in users */}
-        {isAuthenticated && player?.sport && (
-          <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
-            <span>
-              Mostrando:{' '}
-              <strong className="text-brand">
-                {sport ? SPORT_LABEL[sport] : SPORT_LABEL[player.sport]}
-              </strong>
-            </span>
-            {sport !== undefined && (
-              <Link href="/schedule" className="text-xs text-brand hover:underline">
-                (ver todos os esportes)
+        <div className="grid md:grid-cols-[220px_1fr] gap-8">
+
+          {/* Sidebar */}
+          <aside className="space-y-5">
+
+            {/* Esporte */}
+            <div>
+              <p className="text-xs font-semibold text-gray-400 mb-2">Esporte</p>
+              <select
+                value={sport ?? ''}
+                onChange={(e) => navTo(buildUrl({ sport: e.target.value || undefined }))}
+                className={inputCls}
+              >
+                <option value="">Todos os esportes</option>
+                {SPORT_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>{o.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Formato */}
+            <div>
+              <p className="text-xs font-semibold text-gray-400 mb-2">Formato</p>
+              <div className="flex flex-col gap-2">
+                {([
+                  { value: undefined, label: 'Todos' },
+                  { value: MatchType.INDIVIDUAL, label: 'Individual' },
+                  { value: MatchType.DOUBLES,    label: 'Duplas' },
+                  { value: MatchType.TEAM,       label: 'Times' },
+                ] as const).map(({ value, label }) => (
+                  <Link key={label} href={buildUrl({ matchType: value })}
+                    className={pill(!value ? !matchType : matchType === value)}>
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Gênero */}
+            <div>
+              <p className="text-xs font-semibold text-gray-400 mb-2">Gênero</p>
+              <div className="flex flex-col gap-2">
+                {([
+                  { value: undefined,          label: 'Todos' },
+                  { value: GenderType.MIXED,   label: 'Misto' },
+                  { value: GenderType.MALE,    label: 'Masculino' },
+                  { value: GenderType.FEMALE,  label: 'Feminino' },
+                ] as const).map(({ value, label }) => (
+                  <Link key={label} href={buildUrl({ genderType: value })}
+                    className={pill(!value ? !genderType : genderType === value)}>
+                    {label}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {(sport || matchType || genderType) && (
+              <Link href="/schedule"
+                className="block text-xs text-gray-400 hover:text-red-400 transition-colors">
+                ✕ Limpar filtros
               </Link>
             )}
-          </div>
-        )}
+          </aside>
 
-        {/* Sport filter */}
-        <div className="flex gap-1.5 mb-3 flex-wrap">
-          <Link
-            href={buildUrl({ sport: undefined })}
-            className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-              !sport ? 'bg-brand text-white border-brand' : 'border-gray-300 text-gray-600 hover:border-brand'
-            }`}
-          >
-            Todos
-          </Link>
-          {SPORT_OPTIONS.map((o) => (
-            <Link
-              key={o.value}
-              href={buildUrl({ sport: o.value })}
-              className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                sport === o.value
-                  ? 'bg-brand text-white border-brand'
-                  : 'border-gray-300 text-gray-600 hover:border-brand'
-              }`}
-            >
-              {o.label}
-            </Link>
-          ))}
-        </div>
+          {/* Lista */}
+          <div>
+            <p className="text-xs text-gray-400 mb-6">
+              {total} partida{total !== 1 ? 's' : ''} encontrada{total !== 1 ? 's' : ''}
+            </p>
 
-        {/* Format + gender filter */}
-        <div className="flex gap-1.5 mb-6 flex-wrap">
-          {(['', MatchType.INDIVIDUAL, MatchType.DOUBLES, MatchType.TEAM] as const).map((mt) => (
-            <Link
-              key={mt || 'all-mt'}
-              href={buildUrl({ matchType: mt || undefined })}
-              className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                (matchType === mt || (!matchType && !mt))
-                  ? 'bg-blue-600 text-white border-blue-600'
-                  : 'border-gray-300 text-gray-600 hover:border-blue-400'
-              }`}
-            >
-              {mt ? MATCH_TYPE_LABEL[mt] : 'Qualquer formato'}
-            </Link>
-          ))}
-          {(['' , GenderType.MIXED, GenderType.MALE, GenderType.FEMALE] as const).map((gt) => (
-            <Link
-              key={gt || 'all-gt'}
-              href={buildUrl({ genderType: gt || undefined })}
-              className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
-                (genderType === gt || (!genderType && !gt))
-                  ? 'bg-purple-600 text-white border-purple-600'
-                  : 'border-gray-300 text-gray-600 hover:border-purple-400'
-              }`}
-            >
-              {gt ? GENDER_TYPE_LABEL[gt as GenderType] : 'Qualquer gênero'}
-            </Link>
-          ))}
-        </div>
-
-        {loading ? (
-          <div className="text-center py-16 text-gray-400">Carregando...</div>
-        ) : schedules.length === 0 ? (
-          <div className="text-center py-16 text-gray-400">
-            <p className="text-4xl mb-3">📅</p>
-            <p>Nenhuma partida agendada</p>
-            <Link href="/schedule/new" className="text-brand text-sm mt-2 inline-block hover:underline">
-              Criar a primeira
-            </Link>
-          </div>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2">
-            {schedules.map((s) => {
-              const organizer = typeof s.organizer === 'object' ? s.organizer : null
-              const spotsLeft = s.maxPlayers - s.players.length
-              return (
-                <Link
-                  key={s._id}
-                  href={`/schedule/${s._id}`}
-                  className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <p className="font-semibold text-gray-900">{s.title}</p>
-                      <p className="text-sm text-gray-500 mt-0.5">
-                        {SPORT_LABEL[s.sport]} · {MATCH_TYPE_LABEL[s.matchType]}
-                      </p>
-                    </div>
-                    <span className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 ml-2 ${STATUS_STYLE[s.status]}`}>
-                      {STATUS_LABEL[s.status]}
-                    </span>
-                  </div>
-
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p>📅 {new Date(s.date).toLocaleDateString('pt-BR')} às {s.time}</p>
-                    <p>📍 {s.location}, {s.city}</p>
-                    <p>
-                      {GENDER_TYPE_LABEL[s.genderType]} ·{' '}
-                      <span className={spotsLeft === 0 ? 'text-orange-600 font-medium' : 'text-accent'}>
-                        {s.players.length}/{s.maxPlayers} confirmados
-                      </span>
-                    </p>
-                  </div>
-
-                  <p className="text-xs text-gray-400 mt-3">
-                    Organizado por {organizer?.name ?? '—'}
-                  </p>
+            {loading ? (
+              <div className="py-20 text-center border border-gray-100">
+                <p className="text-gray-300 text-xs font-bold tracking-widest uppercase">Carregando...</p>
+              </div>
+            ) : schedules.length === 0 ? (
+              <div className="py-24 text-center border border-gray-100">
+                <p className="text-gray-300 text-5xl font-black mb-4">—</p>
+                <p className="text-gray-400 text-sm">Nenhuma partida agendada</p>
+                <Link href="/schedule/new"
+                  className="text-brand text-sm font-medium mt-4 inline-block hover:underline">
+                  Criar a primeira
                 </Link>
-              )
-            })}
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100 border border-gray-100">
+                {schedules.map((s) => {
+                  const organizer = typeof s.organizer === 'object' ? s.organizer : null
+                  const spotsLeft = s.maxPlayers - s.players.length
+                  const status = STATUS_CONFIG[s.status]
+
+                  return (
+                    <Link key={s._id} href={`/schedule/${s._id}`}
+                      className="flex items-center gap-6 px-6 py-5 hover:bg-gray-50 transition-colors group">
+
+                      {/* Data */}
+                      <div className="text-center shrink-0 w-12">
+                        <p className="text-xl font-black text-brand leading-none">
+                          {new Date(s.date).getDate()}
+                        </p>
+                        <p className="text-xs text-gray-300 uppercase tracking-wide mt-0.5">
+                          {new Date(s.date).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}
+                        </p>
+                      </div>
+
+                      <div className="w-px h-10 bg-gray-100 shrink-0" />
+
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-gray-900 group-hover:text-brand transition-colors truncate">
+                          {s.title}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {SPORT_LABEL[s.sport]} · {MATCH_TYPE_LABEL[s.matchType]}
+                        </p>
+                        <div className="flex items-center gap-4 mt-2">
+                          <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                            <Clock size={10} /> {s.time}
+                          </span>
+                          <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                            <MapPin size={10} /> {s.city}
+                          </span>
+                          <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                            <Users size={10} />
+                            <span className={spotsLeft === 0 ? 'text-orange-500 font-bold' : ''}>
+                              {s.players.length}/{s.maxPlayers}
+                            </span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Status */}
+                      <div className="text-right shrink-0">
+                        <span className={`text-xs ${status.cls}`}>{status.label}</span>
+                        <p className="text-xs text-gray-300 mt-1">{organizer?.name ?? '—'}</p>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </main>
-    </>
+  )
+}
+
+export default function SchedulePage() {
+  return (
+    <PageLayout>
+      <Suspense fallback={
+        <div className="max-w-6xl mx-auto px-8 py-14">
+          <p className="text-gray-300 text-xs font-bold tracking-widest uppercase">Carregando...</p>
+        </div>
+      }>
+        <ScheduleContent />
+      </Suspense>
+    </PageLayout>
   )
 }

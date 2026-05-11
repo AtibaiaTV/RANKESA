@@ -1,4 +1,4 @@
-import { IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsString } from 'class-validator'
+import { IsDateString, IsEnum, IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 import { Sport } from '@rank-app/shared'
 
 export class CreateMatchDto {
@@ -17,4 +17,8 @@ export class CreateMatchDto {
 
   @IsDateString()
   date: string
+
+  @IsOptional()
+  @IsMongoId()
+  scheduledMatchId?: string
 }

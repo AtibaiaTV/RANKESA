@@ -41,6 +41,9 @@ export class Match {
 
   @Prop({ default: false })
   eloApplied: boolean
+
+  @Prop({ type: Types.ObjectId, ref: 'ScheduledMatch' })
+  scheduledMatchRef?: Types.ObjectId
 }
 
 export const MatchSchema = SchemaFactory.createForClass(Match)

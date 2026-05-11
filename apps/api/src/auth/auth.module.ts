@@ -6,6 +6,8 @@ import { AuthService } from './auth.service'
 import { AuthController } from './auth.controller'
 import { JwtStrategy } from './strategies/jwt.strategy'
 import { PlayersModule } from '../players/players.module'
+import { AsaasModule } from '../asaas/asaas.module'
+import { MailModule } from '../mail/mail.module'
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { PlayersModule } from '../players/players.module'
       }),
     }),
     PlayersModule,
+    AsaasModule,
+    MailModule,
   ],
   providers: [AuthService, JwtStrategy],
   controllers: [AuthController],

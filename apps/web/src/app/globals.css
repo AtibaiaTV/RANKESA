@@ -1,11 +1,18 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand: #2E1A8E;
-  --color-brand-dark: #221568;
+  /* Sidebar / painel escuro — navy do logo */
+  --color-navy: #0D1630;
+  --color-navy-dark: #080f20;
+
+  /* Azul-violeta do logo — cor principal (botões, links, ativo) */
+  --color-brand: #3F01C4;
+  --color-brand-dark: #2C0090;
   --color-brand-light: #ede9ff;
-  --color-accent: #84C200;
-  --color-accent-dark: #6a9b00;
+
+  /* Verde limão — cor de destaque */
+  --color-accent: #8DC22A;
+  --color-accent-dark: #6fa31e;
 }
 
 * {
