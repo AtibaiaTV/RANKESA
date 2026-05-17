@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { BarChart2, BookOpen, Calendar, Coins, LayoutDashboard, LogOut, Plus } from 'lucide-react'
-import Image from 'next/image'
+import { RankesaLogo } from '@/components/ui/rankesa-logo'
 
 const NAV = [
   { href: '/ranking',   label: 'Ranking',  icon: BarChart2 },
@@ -14,46 +14,42 @@ const NAV = [
   { href: '/regras',    label: 'Regras',   icon: BookOpen },
 ]
 
+const TEAL = '#00BFA5'
+
 export function PageLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, player, logout } = useAuth()
   const pathname = usePathname()
 
   return (
-    <div className="min-h-screen flex">
+    <div style={{ minHeight: '100vh', display: 'flex', background: '#0D1117' }}>
 
-      {/* ── Sidebar esquerda — fundo navy do logo ── */}
-      <div className="hidden lg:flex w-56 shrink-0 flex-col bg-navy sticky top-0 h-screen overflow-hidden">
-
-        {/* Detalhe decorativo */}
-        <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/[0.02] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-48 h-48 rounded-full bg-white/[0.02] translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-
-        {/* Logo */}
-        <div className="relative z-10 px-4 pt-6 pb-4">
-          <Link href="/">
-            <Image
-              src="/logo-dark.png"
-              alt="RANK"
-              width={400}
-              height={216}
-              style={{ width: '100%', height: 'auto' }}
-              priority
-            />
+      {/* ── Sidebar desktop ── */}
+      <div className="hidden lg:flex" style={{
+        width: 220, flexShrink: 0, flexDirection: 'column',
+        background: '#0D1117', borderRight: '1px solid #1C2333',
+        position: 'sticky', top: 0, height: '100vh', overflow: 'hidden',
+      }}>
+        <div style={{ padding: '24px 20px 20px' }}>
+          <Link href="/" style={{ textDecoration: 'none' }}>
+            <RankesaLogo size={28} />
           </Link>
         </div>
 
-        {/* Navegação */}
-        <nav className="relative z-10 flex-1 px-3">
+        <nav style={{ flex: 1, padding: '4px 12px' }}>
           {NAV.filter(n => !n.authOnly || isAuthenticated).map(({ href, label, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
             return (
               <Link key={href} href={href}
-                className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all mb-0.5 ${
-                  active
-                    ? 'bg-white/10 text-white'
-                    : 'text-white/40 hover:text-white/70 hover:bg-white/5'
-                }`}>
-                <Icon size={14} />
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px', borderRadius: 8, marginBottom: 2,
+                  fontSize: 14, fontWeight: active ? 600 : 500,
+                  color: active ? TEAL : '#6B7A8D',
+                  background: active ? 'rgba(0,191,165,0.08)' : 'transparent',
+                  textDecoration: 'none', transition: 'color .15s, background .15s',
+                }}
+              >
+                <Icon size={15} />
                 {label}
               </Link>
             )
@@ -61,32 +57,41 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
 
           {isAuthenticated && (
             <Link href="/matches/new"
-              className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-accent hover:text-accent-dark transition-all mt-4">
-              <Plus size={14} />
-              Registrar partida
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 12px', borderRadius: 8, marginTop: 16,
+                fontSize: 14, fontWeight: 600, color: TEAL,
+                background: 'rgba(0,191,165,0.08)', border: '1px solid rgba(0,191,165,0.15)',
+                textDecoration: 'none',
+              }}
+            >
+              <Plus size={14} /> Registrar partida
             </Link>
           )}
         </nav>
 
-        {/* Rodapé da sidebar — usuário */}
-        <div className="relative z-10 px-4 pb-6 pt-4 border-t border-white/10">
+        <div style={{ padding: '16px 20px 24px', borderTop: '1px solid #1C2333' }}>
           {isAuthenticated ? (
             <div>
-              <p className="text-white/50 text-xs px-2 mb-2 truncate">{player?.name}</p>
+              <p style={{ color: '#4A5A6A', fontSize: 12, marginBottom: 8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {player?.name}
+              </p>
               <button onClick={logout}
-                className="flex items-center gap-2 text-white/30 hover:text-red-300 text-xs px-2 py-1.5 w-full transition-colors">
-                <LogOut size={11} />
-                Sair
+                style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#4A5A6A', fontSize: 12, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#F87171')}
+                onMouseLeave={e => (e.currentTarget.style.color = '#4A5A6A')}
+              >
+                <LogOut size={12} /> Sair
               </button>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <Link href="/login"
-                className="block text-center text-sm font-bold text-brand bg-accent py-2.5 hover:bg-accent-dark transition-colors w-full">
+                style={{ display: 'block', textAlign: 'center', fontSize: 13, fontWeight: 700, color: '#0D1117', background: TEAL, padding: '10px 0', borderRadius: 8, textDecoration: 'none' }}>
                 Entrar
               </Link>
               <Link href="/login"
-                className="block text-center text-xs text-white/30 hover:text-white/50 py-1 transition-colors">
+                style={{ display: 'block', textAlign: 'center', fontSize: 12, color: '#4A5A6A', textDecoration: 'none' }}>
                 Criar conta grátis
               </Link>
             </div>
@@ -94,25 +99,33 @@ export function PageLayout({ children }: { children: React.ReactNode }) {
         </div>
       </div>
 
-      {/* ── Conteúdo direito ── */}
-      <div className="flex-1 flex flex-col min-w-0 bg-gray-50">
+      {/* ── Content ── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, background: '#0D1117' }}>
 
-        {/* Header mobile */}
-        <header className="lg:hidden bg-white border-b border-gray-100 sticky top-0 z-50">
-          <div className="px-6 h-14 flex items-center justify-between">
-            <Link href="/" className="text-xl font-black text-brand tracking-wider">RANK</Link>
-            <nav className="flex items-center gap-4">
+        {/* Mobile header */}
+        <header className="lg:hidden" style={{
+          background: '#0D1117', borderBottom: '1px solid #1C2333',
+          position: 'sticky', top: 0, zIndex: 50,
+        }}>
+          <div style={{ padding: '0 20px', height: 54, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Link href="/" style={{ textDecoration: 'none' }}>
+              <RankesaLogo size={22} />
+            </Link>
+            <nav style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
               {NAV.filter(n => !n.authOnly || isAuthenticated).map(({ href, label }) => (
                 <Link key={href} href={href}
-                  className={`text-sm transition-colors ${
-                    pathname === href ? 'text-brand font-semibold' : 'text-gray-400 hover:text-gray-700'
-                  }`}>
+                  style={{
+                    fontSize: 13, textDecoration: 'none',
+                    color: pathname === href ? TEAL : '#6B7A8D',
+                    fontWeight: pathname === href ? 600 : 400,
+                  }}
+                >
                   {label}
                 </Link>
               ))}
               {isAuthenticated && (
                 <button onClick={logout}
-                  className="text-sm text-gray-400 hover:text-red-400 transition-colors">
+                  style={{ fontSize: 13, color: '#6B7A8D', background: 'none', border: 'none', cursor: 'pointer' }}>
                   Sair
                 </button>
               )}

@@ -1,5 +1,4 @@
 'use client'
-
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useState, Suspense } from 'react'
@@ -7,55 +6,208 @@ import Link from 'next/link'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { getSchedules } from '@/lib/api/schedules'
 import { PageLayout } from '@/components/layout/page-layout'
-import { GenderType, MatchType, ScheduledMatch, ScheduleStatus, Sport } from '@rank-app/shared'
-import { useAuth } from '@/contexts/auth-context'
-import { GENDER_TYPE_LABEL, MATCH_TYPE_LABEL, SPORT_LABEL, SPORT_OPTIONS } from '@/lib/sports'
-import { Plus, MapPin, Clock, Users } from 'lucide-react'
+import { Player, ScheduledMatch, ScheduleStatus, Sport } from '@rank-app/shared'
+import { SPORT_LABEL, SPORT_OPTIONS } from '@/lib/sports'
+import { Plus, MapPin, Calendar, Users, ChevronDown, BarChart2, CheckCircle, Globe, Clock } from 'lucide-react'
+import { PlayerAvatar } from '@/components/ui/player-avatar'
 
-const STATUS_CONFIG: Record<ScheduleStatus, { label: string; cls: string }> = {
-  [ScheduleStatus.OPEN]:      { label: 'Aberto',    cls: 'text-accent font-semibold' },
-  [ScheduleStatus.FULL]:      { label: 'Lotado',    cls: 'text-orange-500 font-semibold' },
-  [ScheduleStatus.CANCELLED]: { label: 'Cancelado', cls: 'text-gray-300 font-medium' },
-  [ScheduleStatus.COMPLETED]: { label: 'Concluído', cls: 'text-gray-400 font-medium' },
+const TEAL   = '#00BFA5'
+const SURF   = '#161B22'
+const BORDER = '#30363D'
+const MUTED  = '#8B949E'
+
+const SPORT_COLOR: Partial<Record<Sport, string>> = {
+  [Sport.TENNIS]:           '#22C55E',
+  [Sport.PADEL]:            '#3B82F6',
+  [Sport.BEACH_TENNIS]:     '#F97316',
+  [Sport.SQUASH]:           '#10B981',
+  [Sport.BADMINTON]:        '#06B6D4',
+  [Sport.TABLE_TENNIS]:     '#60A5FA',
+  [Sport.VOLLEYBALL]:       '#EAB308',
+  [Sport.BEACH_VOLLEYBALL]: '#FB923C',
+  [Sport.FUTSAL]:           '#2563EB',
+  [Sport.BASKETBALL]:       '#F97316',
+  [Sport.FOOTBALL]:         '#22C55E',
+  [Sport.HANDBALL]:         '#EF4444',
+  [Sport.FOOTVOLLEY]:       '#10B981',
+  [Sport.CHESS]:            '#A16207',
 }
 
-const pill = (active: boolean) =>
-  `px-3 py-2 text-sm transition-colors border-l-2 ${
-    active
-      ? 'border-brand text-brand font-semibold bg-brand/5'
-      : 'border-transparent text-gray-400 hover:text-gray-700 font-normal'
-  }`
+const SPORT_EMOJI: Partial<Record<Sport, string>> = {
+  [Sport.TENNIS]:           '🎾',
+  [Sport.PADEL]:            '🏓',
+  [Sport.BEACH_TENNIS]:     '🏸',
+  [Sport.SQUASH]:           '🎾',
+  [Sport.BADMINTON]:        '🏸',
+  [Sport.TABLE_TENNIS]:     '🏓',
+  [Sport.VOLLEYBALL]:       '🏐',
+  [Sport.BEACH_VOLLEYBALL]: '🏐',
+  [Sport.FUTSAL]:           '⚽',
+  [Sport.BASKETBALL]:       '🏀',
+  [Sport.FOOTBALL]:         '⚽',
+  [Sport.HANDBALL]:         '🤾',
+  [Sport.FOOTVOLLEY]:       '🏐',
+  [Sport.CHESS]:            '♟️',
+}
 
-const inputCls = 'w-full border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:border-brand transition-colors bg-white text-gray-700'
+type StatusInfo = { label: string; color: string; bg: string }
+const STATUS_CONFIG: Record<ScheduleStatus, StatusInfo> = {
+  [ScheduleStatus.OPEN]:      { label: 'Aberta',     color: '#22C55E', bg: 'transparent'              },
+  [ScheduleStatus.FULL]:      { label: 'Confirmada', color: TEAL,      bg: 'rgba(0,191,165,0.15)'     },
+  [ScheduleStatus.CANCELLED]: { label: 'Cancelado',  color: MUTED,     bg: 'rgba(139,148,158,0.12)'   },
+  [ScheduleStatus.COMPLETED]: { label: 'Concluído',  color: MUTED,     bg: 'rgba(139,148,158,0.12)'   },
+}
+
+function fmtDate(dateStr: string, time: string) {
+  const d = new Date(dateStr)
+  const day = d.getDate()
+  const month = d.toLocaleDateString('pt-BR', { month: 'short' })
+    .replace('.', '').replace(/^(.)/, c => c.toUpperCase())
+  return `${day} ${month}  ${time}`
+}
+
+function FilterSelect({
+  icon, value, onChange, children, placeholder,
+}: {
+  icon: React.ReactNode
+  value: string
+  onChange?: (v: string) => void
+  children: React.ReactNode
+  placeholder: string
+}) {
+  return (
+    <div style={{ position: 'relative', flex: 1 }}>
+      <div style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: MUTED, display: 'flex', pointerEvents: 'none' }}>
+        {icon}
+      </div>
+      <select
+        value={value}
+        onChange={e => onChange?.(e.target.value)}
+        style={{
+          width: '100%', background: SURF, border: `1px solid ${BORDER}`, borderRadius: 10,
+          padding: '12px 38px 12px 40px', fontSize: 14, color: value ? '#E6EDF3' : MUTED,
+          appearance: 'none', cursor: 'pointer', outline: 'none',
+        }}
+      >
+        <option value="">{placeholder}</option>
+        {children}
+      </select>
+      <ChevronDown size={14} style={{ position: 'absolute', right: 13, top: '50%', transform: 'translateY(-50%)', color: MUTED, pointerEvents: 'none' }} />
+    </div>
+  )
+}
+
+function MatchCard({ match }: { match: ScheduledMatch }) {
+  const sportColor   = SPORT_COLOR[match.sport] ?? TEAL
+  const emoji        = SPORT_EMOJI[match.sport] ?? '🏅'
+  const st           = STATUS_CONFIG[match.status]
+  const resolved     = match.players.filter((p): p is Player => typeof p === 'object')
+  const avatars      = resolved.slice(0, 3)
+  const extra        = match.players.length - avatars.length
+
+  return (
+    <Link
+      href={`/schedule/${match._id}`}
+      style={{
+        textDecoration: 'none', display: 'block',
+        background: SURF, border: `1px solid ${BORDER}`, borderRadius: 14,
+        padding: '20px 20px 18px', transition: 'border-color .15s',
+      }}
+    >
+      {/* Sport + status */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <div style={{
+          width: 52, height: 52, borderRadius: '50%', flexShrink: 0,
+          background: sportColor + '20', border: `2px solid ${sportColor}40`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24,
+        }}>
+          {emoji}
+        </div>
+
+        <p style={{ fontSize: 20, fontWeight: 900, color: '#E6EDF3', flex: 1, margin: 0 }}>
+          {SPORT_LABEL[match.sport]}
+        </p>
+
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 5, flexShrink: 0,
+          background: st.bg, borderRadius: 20, padding: '4px 10px',
+          border: st.bg === 'transparent' ? 'none' : `1px solid ${st.color}30`,
+        }}>
+          {match.status === ScheduleStatus.OPEN && (
+            <div style={{ width: 7, height: 7, borderRadius: '50%', background: st.color }} />
+          )}
+          {match.status === ScheduleStatus.FULL && (
+            <CheckCircle size={11} style={{ color: st.color }} />
+          )}
+          {(match.status === ScheduleStatus.CANCELLED || match.status === ScheduleStatus.COMPLETED) && (
+            <Clock size={11} style={{ color: st.color }} />
+          )}
+          <span style={{ fontSize: 12, fontWeight: 700, color: st.color }}>{st.label}</span>
+        </div>
+      </div>
+
+      {/* Date */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
+        <Calendar size={14} style={{ color: TEAL }} />
+        <span style={{ fontSize: 14, color: TEAL, fontWeight: 600 }}>{fmtDate(match.date, match.time)}</span>
+      </div>
+
+      {/* Location */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 7, marginBottom: 18 }}>
+        <MapPin size={14} style={{ color: MUTED, marginTop: 2, flexShrink: 0 }} />
+        <div>
+          <p style={{ fontSize: 14, fontWeight: 600, color: '#E6EDF3', margin: 0 }}>{match.location}</p>
+          <p style={{ fontSize: 12, color: MUTED, margin: '2px 0 0' }}>{match.city}</p>
+        </div>
+      </div>
+
+      {/* Players */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {avatars.length === 0 ? (
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#1C2333', border: `2px dashed ${BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Users size={13} style={{ color: MUTED }} />
+            </div>
+          ) : (
+            avatars.map((p, i) => (
+              <div key={p._id} style={{ marginLeft: i === 0 ? 0 : -10, borderRadius: '50%', border: `2px solid ${SURF}`, overflow: 'hidden', zIndex: avatars.length - i, position: 'relative' }}>
+                <PlayerAvatar name={p.name} avatar={p.avatar} size="sm" ring="none" />
+              </div>
+            ))
+          )}
+          {extra > 0 && (
+            <div style={{ marginLeft: -10, width: 32, height: 32, borderRadius: '50%', background: '#1C2333', border: `2px solid ${SURF}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, color: MUTED, position: 'relative', zIndex: 0 }}>
+              +{extra}
+            </div>
+          )}
+        </div>
+        <span style={{ fontSize: 13, color: MUTED, fontWeight: 600 }}>
+          {match.players.length}/{match.maxPlayers} jogadores
+        </span>
+      </div>
+    </Link>
+  )
+}
 
 function ScheduleContent() {
   const searchParams = useSearchParams()
-  const router = useRouter()
-  const { player, isAuthenticated } = useAuth()
+  const router       = useRouter()
 
-  const sport      = (searchParams.get('sport')      as Sport      | null) ?? undefined
-  const matchType  = (searchParams.get('matchType')  as MatchType  | null) ?? undefined
-  const genderType = (searchParams.get('genderType') as GenderType | null) ?? undefined
-  const page       = Number(searchParams.get('page') ?? 1)
+  const sport  = (searchParams.get('sport')  as Sport         | null) ?? undefined
+  const status = (searchParams.get('status') as ScheduleStatus | null) ?? undefined
+  const page   = Number(searchParams.get('page') ?? 1)
 
   const [schedules, setSchedules] = useState<ScheduledMatch[]>([])
-  const [total, setTotal]         = useState(0)
-  const [loading, setLoading]     = useState(true)
-
-  useEffect(() => {
-    if (isAuthenticated && player?.sport && !searchParams.get('sport')) {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set('sport', player.sport)
-      router.replace(`/schedule?${params.toString()}`)
-    }
-  }, [isAuthenticated, player?.sport, searchParams, router])
+  const [total,     setTotal]     = useState(0)
+  const [loading,   setLoading]   = useState(true)
 
   useEffect(() => {
     setLoading(true)
-    getSchedules({ sport, matchType, genderType, page })
-      .then((r) => { setSchedules(r.data); setTotal(r.total) })
+    getSchedules({ sport, page })
+      .then(r => { setSchedules(r.data); setTotal(r.total) })
+      .catch(() => setSchedules([]))
       .finally(() => setLoading(false))
-  }, [sport, matchType, genderType, page])
+  }, [sport, page])
 
   function buildUrl(overrides: Record<string, string | undefined>) {
     const merged: Record<string, string> = {}
@@ -69,166 +221,94 @@ function ScheduleContent() {
     return `/schedule${qs ? `?${qs}` : ''}`
   }
 
-  function navTo(url: string) { router.push(url) }
+  const displayed = status ? schedules.filter(s => s.status === status) : schedules
 
   return (
-    <main className="max-w-5xl mx-auto px-6 py-8">
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0D1117', minHeight: '100vh', padding: '32px 40px', position: 'relative' }}>
 
-        {/* Título */}
-        <div className="mb-6">
-          <p className="text-xs text-gray-400 mb-1">Agenda</p>
-          <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-gray-900">Partidas</h1>
-            <Link href="/schedule/new"
-              className="inline-flex items-center gap-2 bg-brand text-white text-sm font-bold px-4 py-2 hover:bg-brand-dark transition-colors">
-              <Plus size={14} /> Criar partida
-            </Link>
-          </div>
+      {/* Title */}
+      <h1 style={{ fontSize: 42, fontWeight: 900, color: '#E6EDF3', margin: '0 0 28px', letterSpacing: '-0.02em' }}>
+        Partidas
+      </h1>
+
+      {/* Filter bar */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 32 }}>
+        <FilterSelect
+          icon={<Globe size={15} />}
+          value={sport ?? ''}
+          onChange={v => router.push(buildUrl({ sport: v || undefined }))}
+          placeholder="Todos os Esportes"
+        >
+          {SPORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+        </FilterSelect>
+
+        <FilterSelect icon={<Calendar size={15} />} value="" placeholder="Data">
+          {null}
+        </FilterSelect>
+
+        <FilterSelect icon={<BarChart2 size={15} />} value="" placeholder="Nível">
+          <option value="BEGINNER">Iniciante</option>
+          <option value="INTERMEDIATE">Intermediário</option>
+          <option value="ADVANCED">Avançado</option>
+        </FilterSelect>
+
+        <FilterSelect
+          icon={<CheckCircle size={15} />}
+          value={status ?? ''}
+          onChange={v => router.push(buildUrl({ status: v || undefined }))}
+          placeholder="Status"
+        >
+          <option value={ScheduleStatus.OPEN}>Aberta</option>
+          <option value={ScheduleStatus.FULL}>Confirmada</option>
+          <option value={ScheduleStatus.CANCELLED}>Cancelada</option>
+          <option value={ScheduleStatus.COMPLETED}>Concluída</option>
+        </FilterSelect>
+      </div>
+
+      {/* Cards */}
+      {loading ? (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ color: MUTED, fontSize: 14 }}>Carregando...</p>
         </div>
-
-        <div className="grid md:grid-cols-[220px_1fr] gap-8">
-
-          {/* Sidebar */}
-          <aside className="space-y-5">
-
-            {/* Esporte */}
-            <div>
-              <p className="text-xs font-semibold text-gray-400 mb-2">Esporte</p>
-              <select
-                value={sport ?? ''}
-                onChange={(e) => navTo(buildUrl({ sport: e.target.value || undefined }))}
-                className={inputCls}
-              >
-                <option value="">Todos os esportes</option>
-                {SPORT_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>{o.label}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Formato */}
-            <div>
-              <p className="text-xs font-semibold text-gray-400 mb-2">Formato</p>
-              <div className="flex flex-col gap-2">
-                {([
-                  { value: undefined, label: 'Todos' },
-                  { value: MatchType.INDIVIDUAL, label: 'Individual' },
-                  { value: MatchType.DOUBLES,    label: 'Duplas' },
-                  { value: MatchType.TEAM,       label: 'Times' },
-                ] as const).map(({ value, label }) => (
-                  <Link key={label} href={buildUrl({ matchType: value })}
-                    className={pill(!value ? !matchType : matchType === value)}>
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {/* Gênero */}
-            <div>
-              <p className="text-xs font-semibold text-gray-400 mb-2">Gênero</p>
-              <div className="flex flex-col gap-2">
-                {([
-                  { value: undefined,          label: 'Todos' },
-                  { value: GenderType.MIXED,   label: 'Misto' },
-                  { value: GenderType.MALE,    label: 'Masculino' },
-                  { value: GenderType.FEMALE,  label: 'Feminino' },
-                ] as const).map(({ value, label }) => (
-                  <Link key={label} href={buildUrl({ genderType: value })}
-                    className={pill(!value ? !genderType : genderType === value)}>
-                    {label}
-                  </Link>
-                ))}
-              </div>
-            </div>
-
-            {(sport || matchType || genderType) && (
-              <Link href="/schedule"
-                className="block text-xs text-gray-400 hover:text-red-400 transition-colors">
-                ✕ Limpar filtros
-              </Link>
-            )}
-          </aside>
-
-          {/* Lista */}
-          <div>
-            <p className="text-xs text-gray-400 mb-6">
-              {total} partida{total !== 1 ? 's' : ''} encontrada{total !== 1 ? 's' : ''}
-            </p>
-
-            {loading ? (
-              <div className="py-20 text-center border border-gray-100">
-                <p className="text-gray-300 text-xs font-bold tracking-widest uppercase">Carregando...</p>
-              </div>
-            ) : schedules.length === 0 ? (
-              <div className="py-24 text-center border border-gray-100">
-                <p className="text-gray-300 text-5xl font-black mb-4">—</p>
-                <p className="text-gray-400 text-sm">Nenhuma partida agendada</p>
-                <Link href="/schedule/new"
-                  className="text-brand text-sm font-medium mt-4 inline-block hover:underline">
-                  Criar a primeira
-                </Link>
-              </div>
-            ) : (
-              <div className="divide-y divide-gray-100 border border-gray-100">
-                {schedules.map((s) => {
-                  const organizer = typeof s.organizer === 'object' ? s.organizer : null
-                  const spotsLeft = s.maxPlayers - s.players.length
-                  const status = STATUS_CONFIG[s.status]
-
-                  return (
-                    <Link key={s._id} href={`/schedule/${s._id}`}
-                      className="flex items-center gap-6 px-6 py-5 hover:bg-gray-50 transition-colors group">
-
-                      {/* Data */}
-                      <div className="text-center shrink-0 w-12">
-                        <p className="text-xl font-black text-brand leading-none">
-                          {new Date(s.date).getDate()}
-                        </p>
-                        <p className="text-xs text-gray-300 uppercase tracking-wide mt-0.5">
-                          {new Date(s.date).toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')}
-                        </p>
-                      </div>
-
-                      <div className="w-px h-10 bg-gray-100 shrink-0" />
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 group-hover:text-brand transition-colors truncate">
-                          {s.title}
-                        </p>
-                        <p className="text-xs text-gray-400 mt-0.5">
-                          {SPORT_LABEL[s.sport]} · {MATCH_TYPE_LABEL[s.matchType]}
-                        </p>
-                        <div className="flex items-center gap-4 mt-2">
-                          <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                            <Clock size={10} /> {s.time}
-                          </span>
-                          <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                            <MapPin size={10} /> {s.city}
-                          </span>
-                          <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                            <Users size={10} />
-                            <span className={spotsLeft === 0 ? 'text-orange-500 font-bold' : ''}>
-                              {s.players.length}/{s.maxPlayers}
-                            </span>
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Status */}
-                      <div className="text-right shrink-0">
-                        <span className={`text-xs ${status.cls}`}>{status.label}</span>
-                        <p className="text-xs text-gray-300 mt-1">{organizer?.name ?? '—'}</p>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            )}
-          </div>
+      ) : displayed.length === 0 ? (
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+          <p style={{ color: MUTED, fontSize: 15 }}>Nenhuma partida encontrada</p>
+          <Link href="/schedule/new" style={{ color: TEAL, fontSize: 13, textDecoration: 'none', fontWeight: 600 }}>
+            Criar a primeira partida
+          </Link>
         </div>
-      </main>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
+          {displayed.map(m => <MatchCard key={m._id} match={m} />)}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {total > 20 && (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 24 }}>
+          {page > 1 ? (
+            <Link href={buildUrl({ page: String(page - 1) })} style={{ fontSize: 13, fontWeight: 600, color: TEAL, textDecoration: 'none' }}>← Anterior</Link>
+          ) : <span />}
+          <span style={{ fontSize: 12, color: MUTED }}>{page} de {Math.ceil(total / 20)}</span>
+          {page < Math.ceil(total / 20) && (
+            <Link href={buildUrl({ page: String(page + 1) })} style={{ fontSize: 13, fontWeight: 600, color: TEAL, textDecoration: 'none' }}>Próxima →</Link>
+          )}
+        </div>
+      )}
+
+      {/* FAB */}
+      <div style={{ position: 'fixed', bottom: 32, right: 32, display: 'flex', alignItems: 'center', gap: 10, zIndex: 50 }}>
+        <span style={{ background: '#161B22', color: '#E6EDF3', fontSize: 13, fontWeight: 600, padding: '7px 14px', borderRadius: 8, border: `1px solid ${BORDER}`, whiteSpace: 'nowrap' }}>
+          Nova Partida
+        </span>
+        <Link
+          href="/schedule/new"
+          style={{ width: 52, height: 52, borderRadius: '50%', background: TEAL, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', boxShadow: '0 4px 20px rgba(0,191,165,0.4)', flexShrink: 0 }}
+        >
+          <Plus size={22} style={{ color: '#0D1117' }} />
+        </Link>
+      </div>
+    </div>
   )
 }
 
@@ -236,8 +316,8 @@ export default function SchedulePage() {
   return (
     <PageLayout>
       <Suspense fallback={
-        <div className="max-w-6xl mx-auto px-8 py-14">
-          <p className="text-gray-300 text-xs font-bold tracking-widest uppercase">Carregando...</p>
+        <div style={{ flex: 1, background: '#0D1117', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <p style={{ color: '#8B949E', fontSize: 14 }}>Carregando...</p>
         </div>
       }>
         <ScheduleContent />

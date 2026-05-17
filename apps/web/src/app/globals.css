@@ -1,18 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  /* Sidebar / painel escuro — navy do logo */
-  --color-navy: #0D1630;
-  --color-navy-dark: #080f20;
+  /* ── RANKESA brand ── */
+  --color-brand:      #00BFA5;
+  --color-brand-dark: #00A896;
+  --color-brand-light:#E0F7F4;
 
-  /* Azul-violeta do logo — cor principal (botões, links, ativo) */
-  --color-brand: #3F01C4;
-  --color-brand-dark: #2C0090;
-  --color-brand-light: #ede9ff;
-
-  /* Verde limão — cor de destaque */
-  --color-accent: #8DC22A;
-  --color-accent-dark: #6fa31e;
+  /* ── Dark theme surfaces ── */
+  --color-navy:     #0D1117;
+  --color-surface:  #161B22;
+  --color-surface-2:#1C2333;
+  --color-border:   #30363D;
+  --color-muted:    #8B949E;
 }
 
 * {
@@ -23,6 +22,6 @@
 
 body {
   font-family: var(--font-inter), system-ui, sans-serif;
-  background: #f9fafb;
-  color: #111827;
+  background: #0D1117;
+  color: #E6EDF3;
 }

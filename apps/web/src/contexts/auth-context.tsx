@@ -8,6 +8,7 @@ interface AuthContextValue {
   token: string | null
   login: (player: Player, token: string) => void
   logout: () => void
+  updatePlayer: (player: Player) => void
   isAuthenticated: boolean
 }
 
@@ -40,8 +41,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem('rank_player')
   }, [])
 
+  const updatePlayer = useCallback((updated: Player) => {
+    setPlayer(updated)
+    localStorage.setItem('rank_player', JSON.stringify(updated))
+  }, [])
+
   return (
-    <AuthContext.Provider value={{ player, token, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ player, token, login, logout, updatePlayer, isAuthenticated: !!token }}>
       {children}
     </AuthContext.Provider>
   )

@@ -5,8 +5,12 @@ import { PageLayout } from '@/components/layout/page-layout'
 import { PlayerAvatar } from '@/components/ui/player-avatar'
 import { Gender, PlayerLevel, Sport } from '@rank-app/shared'
 import { SPORT_OPTIONS, SPORT_LABEL } from '@/lib/sports'
-import { BRAZIL_STATES } from '@/lib/brazil'
-import { Trophy, Medal, ChevronRight, Search } from 'lucide-react'
+import { ChevronDown, TrendingUp } from 'lucide-react'
+
+const TEAL   = '#00BFA5'
+const SURF   = '#161B22'
+const BORDER = '#30363D'
+const MUTED  = '#8B949E'
 
 const LEVEL_LABELS: Record<PlayerLevel, string> = {
   [PlayerLevel.BEGINNER]:     'Iniciante',
@@ -14,28 +18,25 @@ const LEVEL_LABELS: Record<PlayerLevel, string> = {
   [PlayerLevel.ADVANCED]:     'Avançado',
 }
 
-const selectCls = 'border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all cursor-pointer'
-const inputCls  = 'border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand/20 transition-all w-36'
+const TOP_TABS = SPORT_OPTIONS.slice(0, 5)
 
 export default async function RankingPage({
   searchParams,
 }: {
   searchParams: Promise<{
     sport?: string; level?: string; gender?: string
-    city?: string; state?: string; minAge?: string; maxAge?: string; page?: string
+    city?: string; state?: string; page?: string
   }>
 }) {
   const params = await searchParams
   const page   = Number(params.page ?? 1)
 
   const { data: players, total } = await getPlayers({
-    sport:  params.sport  as Sport       | undefined,
-    level:  params.level  as PlayerLevel | undefined,
-    gender: params.gender as Gender      | undefined,
+    sport:  params.sport  as Sport        | undefined,
+    level:  params.level  as PlayerLevel  | undefined,
+    gender: params.gender as Gender       | undefined,
     city:   params.city,
     state:  params.state,
-    minAge: params.minAge ? Number(params.minAge) : undefined,
-    maxAge: params.maxAge ? Number(params.maxAge) : undefined,
     page, limit: 20,
   })
 
@@ -47,210 +48,235 @@ export default async function RankingPage({
     return `/ranking${qs ? `?${qs}` : ''}`
   }
 
-  const hasFilters = !!(params.sport || params.level || params.gender || params.city || params.state || params.minAge)
-  const top3 = players.slice(0, 3)
+  const activeSport = params.sport ?? ''
+  const top3  = page === 1 ? players.slice(0, 3) : []
+  const rest  = page === 1 ? players.slice(3)    : players
 
   return (
     <PageLayout>
-      <div className="flex-1 flex flex-col bg-gray-50 min-h-screen">
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: '#0D1117', minHeight: '100vh', padding: '32px 40px' }}>
 
-        {/* ── Hero do ranking ── */}
-        <div className="bg-brand relative overflow-hidden shrink-0">
-          <div className="absolute inset-0 bg-gradient-to-br from-brand to-[#2C0090]" />
-          <div className="absolute right-0 top-0 h-full w-80 bg-white/[0.03] [clip-path:polygon(30%_0,100%_0,100%_100%,0%_100%)]" />
+        {/* Title */}
+        <h1 style={{ fontSize: 36, fontWeight: 900, color: '#E6EDF3', margin: '0 0 24px', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <TrendingUp size={30} style={{ color: TEAL }} />
+          Ranking
+        </h1>
 
-          <div className="relative z-10 px-8 py-7">
-            <p className="text-white/40 text-[10px] uppercase tracking-[0.25em] font-semibold mb-1">
-              Leaderboard
-            </p>
-            <div className="flex items-end justify-between">
-              <div>
-                <h1 className="text-3xl font-black text-white flex items-center gap-3">
-                  <Trophy size={28} className="text-accent" />
-                  Ranking
-                </h1>
-                <p className="text-white/40 text-sm mt-1">
-                  {total} atleta{total !== 1 ? 's' : ''} competindo
-                </p>
-              </div>
-
-              {/* Pódio top 3 */}
-              {top3.length >= 3 && (
-                <div className="hidden md:flex items-end gap-1 text-center">
-                  {/* 2º */}
-                  <div className="flex flex-col items-center">
-                    <PlayerAvatar name={top3[1].name} avatar={top3[1].avatar} size="sm"
-                      className="mb-1 opacity-70" />
-                    <div className="bg-white/10 w-14 h-8 flex items-center justify-center">
-                      <span className="text-white/60 text-xs font-bold">2º</span>
-                    </div>
-                  </div>
-                  {/* 1º */}
-                  <div className="flex flex-col items-center">
-                    <Trophy size={16} className="text-accent mb-1" />
-                    <PlayerAvatar name={top3[0].name} avatar={top3[0].avatar} size="md"
-                      ring="accent" className="mb-1" />
-                    <div className="bg-accent/20 w-14 h-12 flex items-center justify-center">
-                      <span className="text-accent text-xs font-black">1º</span>
-                    </div>
-                  </div>
-                  {/* 3º */}
-                  <div className="flex flex-col items-center">
-                    <PlayerAvatar name={top3[2].name} avatar={top3[2].avatar} size="sm"
-                      className="mb-1 opacity-60" />
-                    <div className="bg-white/10 w-14 h-6 flex items-center justify-center">
-                      <span className="text-white/60 text-xs font-bold">3º</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Filtros ── */}
-        <div className="bg-white border-b border-gray-100 px-8 py-4 shrink-0">
-          <form method="get" action="/ranking" className="flex flex-wrap gap-2 items-center">
-            <div className="flex items-center gap-2 text-gray-400 mr-1">
-              <Search size={14} />
-              <span className="text-xs font-medium text-gray-400">Filtrar:</span>
-            </div>
-            <select name="sport"  defaultValue={params.sport  ?? ''} className={selectCls}>
-              <option value="">Todos os esportes</option>
-              {SPORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-            </select>
-            <select name="gender" defaultValue={params.gender ?? ''} className={selectCls}>
-              <option value="">Todos gêneros</option>
-              <option value={Gender.MALE}>Masculino</option>
-              <option value={Gender.FEMALE}>Feminino</option>
-            </select>
-            <select name="level"  defaultValue={params.level  ?? ''} className={selectCls}>
-              <option value="">Todos os níveis</option>
-              <option value={PlayerLevel.BEGINNER}>Iniciante</option>
-              <option value={PlayerLevel.INTERMEDIATE}>Intermediário</option>
-              <option value={PlayerLevel.ADVANCED}>Avançado</option>
-            </select>
-            <select name="state"  defaultValue={params.state  ?? ''} className={selectCls}>
-              <option value="">Estado</option>
-              {BRAZIL_STATES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
-            </select>
-            <input name="city" type="text" placeholder="Cidade..." defaultValue={params.city ?? ''} className={inputCls} />
-            <button type="submit"
-              className="bg-brand text-white text-sm font-bold px-4 py-2.5 hover:bg-brand-dark transition-colors">
-              Buscar
-            </button>
-            {hasFilters && (
-              <Link href="/ranking" className="text-xs text-gray-400 hover:text-red-400 transition-colors">
-                Limpar
+        {/* Sport tabs + level filter */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', borderBottom: `1px solid ${BORDER}`, marginBottom: 36 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 0, overflowX: 'auto' }}>
+            {/* All tab */}
+            <Link href={buildUrl({ sport: undefined })}
+              style={{
+                padding: '10px 20px', fontSize: 14, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
+                color: !activeSport ? TEAL : MUTED,
+                borderBottom: !activeSport ? `2px solid ${TEAL}` : '2px solid transparent',
+                marginBottom: -1,
+              }}>
+              Todos
+            </Link>
+            {TOP_TABS.map(s => (
+              <Link key={s.value} href={buildUrl({ sport: s.value })}
+                style={{
+                  padding: '10px 20px', fontSize: 14, fontWeight: 600, textDecoration: 'none', whiteSpace: 'nowrap',
+                  color: activeSport === s.value ? TEAL : MUTED,
+                  borderBottom: activeSport === s.value ? `2px solid ${TEAL}` : '2px solid transparent',
+                  marginBottom: -1,
+                }}>
+                {s.label}
               </Link>
+            ))}
+            {SPORT_OPTIONS.length > 5 && (
+              <span style={{ padding: '10px 20px', fontSize: 14, color: MUTED, cursor: 'default' }}>
+                + mais
+              </span>
             )}
+          </div>
+
+          {/* Level filter */}
+          <form method="get" action="/ranking" style={{ display: 'flex', alignItems: 'center', gap: 0, marginBottom: 8, flexShrink: 0 }}>
+            {params.sport  && <input type="hidden" name="sport"  value={params.sport}  />}
+            {params.gender && <input type="hidden" name="gender" value={params.gender} />}
+            <div style={{ position: 'relative' }}>
+              <select name="level" defaultValue={params.level ?? ''}
+                style={{
+                  background: SURF, border: `1px solid ${BORDER}`, borderRadius: 8,
+                  padding: '8px 36px 8px 14px', fontSize: 13, color: '#E6EDF3',
+                  appearance: 'none', cursor: 'pointer', outline: 'none',
+                }}>
+                <option value="">Nível: Todos os níveis</option>
+                <option value={PlayerLevel.BEGINNER}>Iniciante</option>
+                <option value={PlayerLevel.INTERMEDIATE}>Intermediário</option>
+                <option value={PlayerLevel.ADVANCED}>Avançado</option>
+              </select>
+              <ChevronDown size={13} style={{ position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)', color: MUTED, pointerEvents: 'none' }} />
+            </div>
+            <button type="submit"
+              style={{ marginLeft: 8, background: TEAL, color: '#0D1117', fontSize: 13, fontWeight: 700, padding: '8px 16px', borderRadius: 8, border: 'none', cursor: 'pointer' }}>
+              Filtrar
+            </button>
           </form>
         </div>
 
-        {/* ── Lista de jogadores ── */}
-        <div className="px-8 py-6 flex-1">
-          {players.length === 0 ? (
-            <div className="py-20 text-center bg-white border border-gray-100">
-              <Trophy size={40} className="text-gray-200 mx-auto mb-4" />
-              <p className="text-gray-400 text-sm">Nenhum atleta encontrado</p>
-              <Link href="/ranking" className="text-brand text-sm font-bold mt-3 inline-block hover:underline">
-                Limpar filtros
-              </Link>
+        {/* ── Pódio top 3 ── */}
+        {top3.length >= 3 && (
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', gap: 12, marginBottom: 48 }}>
+
+            {/* 2nd place */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, maxWidth: 200 }}>
+              <div style={{ position: 'relative', marginBottom: 12 }}>
+                <div style={{ width: 80, height: 80, borderRadius: '50%', border: '3px solid #9CA3AF', overflow: 'hidden' }}>
+                  <PlayerAvatar name={top3[1].name} avatar={top3[1].avatar} size="lg" ring="none" />
+                </div>
+                <div style={{ position: 'absolute', top: -6, left: -6, width: 26, height: 26, borderRadius: '50%', background: '#6B7280', border: '2px solid #0D1117', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 900, color: '#fff' }}>
+                  2
+                </div>
+              </div>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#E6EDF3', margin: '0 0 2px', textAlign: 'center' }}>{top3[1].name}</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#9CA3AF', margin: '0 0 16px' }}>{top3[1].elo.toLocaleString('pt-BR')} pts</p>
+              <div style={{ width: '100%', height: 90, background: 'linear-gradient(180deg, #9CA3AF 0%, #4B5563 100%)', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 36, fontWeight: 900, color: 'rgba(255,255,255,0.25)', lineHeight: 1 }}>2</span>
+              </div>
+            </div>
+
+            {/* 1st place */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, maxWidth: 220 }}>
+              <div style={{ position: 'relative', marginBottom: 12 }}>
+                <div style={{ width: 96, height: 96, borderRadius: '50%', border: '3px solid #F0B429', overflow: 'hidden' }}>
+                  <PlayerAvatar name={top3[0].name} avatar={top3[0].avatar} size="xl" ring="none" />
+                </div>
+                <div style={{ position: 'absolute', top: -8, left: -8, width: 30, height: 30, borderRadius: '50%', background: '#F0B429', border: '2px solid #0D1117', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: 900, color: '#0D1117' }}>
+                  1
+                </div>
+              </div>
+              <p style={{ fontSize: 17, fontWeight: 900, color: '#E6EDF3', margin: '0 0 2px', textAlign: 'center' }}>{top3[0].name}</p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#F0B429', margin: '0 0 16px' }}>{top3[0].elo.toLocaleString('pt-BR')} pts</p>
+              <div style={{ width: '100%', height: 120, background: 'linear-gradient(180deg, #D97706 0%, #92400E 100%)', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 52, fontWeight: 900, color: 'rgba(255,255,255,0.2)', lineHeight: 1 }}>1</span>
+              </div>
+            </div>
+
+            {/* 3rd place */}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, maxWidth: 200 }}>
+              <div style={{ position: 'relative', marginBottom: 12 }}>
+                <div style={{ width: 72, height: 72, borderRadius: '50%', border: '3px solid #CD7C2F', overflow: 'hidden' }}>
+                  <PlayerAvatar name={top3[2].name} avatar={top3[2].avatar} size="md" ring="none" />
+                </div>
+                <div style={{ position: 'absolute', top: -6, left: -6, width: 24, height: 24, borderRadius: '50%', background: '#CD7C2F', border: '2px solid #0D1117', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, fontWeight: 900, color: '#fff' }}>
+                  3
+                </div>
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: '#E6EDF3', margin: '0 0 2px', textAlign: 'center' }}>{top3[2].name}</p>
+              <p style={{ fontSize: 13, fontWeight: 700, color: '#CD7C2F', margin: '0 0 16px' }}>{top3[2].elo.toLocaleString('pt-BR')} pts</p>
+              <div style={{ width: '100%', height: 68, background: 'linear-gradient(180deg, #CD7C2F 0%, #78350F 100%)', borderRadius: '10px 10px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ fontSize: 28, fontWeight: 900, color: 'rgba(255,255,255,0.25)', lineHeight: 1 }}>3</span>
+              </div>
+            </div>
+
+          </div>
+        )}
+
+        {/* ── Tabela ── */}
+        <div style={{ background: SURF, border: `1px solid ${BORDER}`, borderRadius: 12, overflow: 'hidden' }}>
+
+          {/* Header */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '56px 1fr 140px 90px 90px 130px',
+            padding: '12px 20px',
+            borderBottom: `1px solid ${BORDER}`,
+            background: '#0D1117',
+          }}>
+            {['Posição', 'Jogador', 'Esporte', 'Vitórias', 'Derrotas', 'Pontos'].map(h => (
+              <span key={h} style={{ fontSize: 11, fontWeight: 700, color: '#4A5A6A', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                {h}
+              </span>
+            ))}
+          </div>
+
+          {rest.length === 0 && top3.length === 0 ? (
+            <div style={{ padding: '48px 20px', textAlign: 'center' }}>
+              <p style={{ color: MUTED, fontSize: 14, margin: '0 0 8px' }}>Nenhum atleta encontrado</p>
+              <Link href="/ranking" style={{ color: TEAL, fontSize: 13, textDecoration: 'none' }}>Limpar filtros</Link>
             </div>
           ) : (
-            <div className="bg-white border border-gray-100 overflow-hidden">
-              {players.map((player, index) => {
-                const pos = (page - 1) * 20 + index + 1
-                const isFirst  = pos === 1
-                const isTop3   = pos <= 3
+            rest.map((player, index) => {
+              const pos = (page - 1) * 20 + index + (page === 1 ? 4 : 1)
+              return (
+                <Link key={player._id} href={`/players/${player._id}`}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '56px 1fr 140px 90px 90px 130px',
+                    padding: '14px 20px',
+                    textDecoration: 'none',
+                    borderBottom: `1px solid ${BORDER}`,
+                    borderLeft: '3px solid transparent',
+                    transition: 'background .15s',
+                  }}
+                  onMouseEnter={undefined}
+                >
+                  {/* Pos */}
+                  <span style={{ fontSize: 14, fontWeight: 600, color: MUTED, alignSelf: 'center' }}>
+                    {pos}
+                  </span>
 
-                return (
-                  <Link key={player._id} href={`/players/${player._id}`}
-                    className={`flex items-center gap-4 px-5 py-4 border-b border-gray-50 last:border-b-0 hover:bg-gray-50 transition-colors group ${
-                      isFirst ? 'bg-accent/5 border-l-4 border-l-accent' :
-                      isTop3  ? 'border-l-4 border-l-brand/30' :
-                      'border-l-4 border-l-transparent'
-                    }`}>
-
-                    {/* Posição */}
-                    <div className="w-8 shrink-0 text-right">
-                      {isFirst ? (
-                        <Trophy size={16} className="text-accent ml-auto" />
-                      ) : isTop3 ? (
-                        <Medal size={16} className="text-brand/50 ml-auto" />
-                      ) : (
-                        <span className="text-sm tabular-nums text-gray-300 font-medium">{pos}</span>
+                  {/* Player */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <PlayerAvatar name={player.name} avatar={player.avatar} size="sm" ring="none" />
+                    <div>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#E6EDF3', margin: 0 }}>{player.name}</p>
+                      {player.city && (
+                        <p style={{ fontSize: 11, color: '#4A5A6A', margin: 0, marginTop: 1 }}>
+                          {player.city}{player.state ? `, ${player.state}` : ''}
+                        </p>
                       )}
                     </div>
+                  </div>
 
-                    {/* Avatar */}
-                    <PlayerAvatar
-                      name={player.name}
-                      avatar={player.avatar}
-                      size="sm"
-                      ring={isFirst ? 'accent' : isTop3 ? 'brand' : 'none'}
-                    />
+                  {/* Sport */}
+                  <span style={{ fontSize: 13, color: MUTED, alignSelf: 'center' }}>
+                    {SPORT_LABEL[player.sport]}
+                  </span>
 
-                    {/* Nome + info */}
-                    <div className="flex-1 min-w-0">
-                      <p className={`font-bold truncate group-hover:text-brand transition-colors ${
-                        isFirst ? 'text-gray-900' : 'text-gray-800'
-                      }`}>
-                        {player.name}
-                      </p>
-                      <p className="text-xs text-gray-400 truncate mt-0.5">
-                        {SPORT_LABEL[player.sport]}
-                        {player.city && ` · ${player.city}`}
-                        {player.state && `, ${player.state}`}
-                        {' · '}{LEVEL_LABELS[player.level]}
-                      </p>
-                    </div>
+                  {/* Wins */}
+                  <span style={{ fontSize: 14, fontWeight: 700, color: TEAL, alignSelf: 'center' }}>
+                    {player.wins}
+                  </span>
 
-                    {/* W/L */}
-                    <div className="hidden sm:flex items-center gap-1 shrink-0">
-                      <span className="text-xs text-accent font-semibold tabular-nums">{player.wins}V</span>
-                      <span className="text-gray-200 text-xs">·</span>
-                      <span className="text-xs text-red-400 font-semibold tabular-nums">{player.losses}D</span>
-                    </div>
+                  {/* Losses */}
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#F87171', alignSelf: 'center' }}>
+                    {player.losses}
+                  </span>
 
-                    {/* Rating */}
-                    <div className={`shrink-0 text-right ${isFirst ? 'min-w-[72px]' : 'min-w-[60px]'}`}>
-                      <p className={`font-black tabular-nums ${
-                        isFirst ? 'text-accent text-xl' :
-                        isTop3  ? 'text-brand text-base' :
-                        'text-gray-700 text-sm'
-                      }`}>
-                        {player.elo}
-                      </p>
-                      <p className="text-[9px] text-gray-300 uppercase tracking-wide">Rating</p>
-                    </div>
-
-                    <ChevronRight size={13} className="text-gray-200 group-hover:text-brand transition-colors shrink-0" />
-                  </Link>
-                )
-              })}
-            </div>
-          )}
-
-          {/* Paginação */}
-          {total > 20 && (
-            <div className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
-              {page > 1 ? (
-                <Link href={buildUrl({ page: String(page - 1) })}
-                  className="text-sm font-medium text-gray-400 hover:text-brand transition-colors">
-                  ← Anterior
+                  {/* Points */}
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#E6EDF3', alignSelf: 'center' }}>
+                    {player.elo.toLocaleString('pt-BR')} pts
+                  </span>
                 </Link>
-              ) : <span />}
-              <span className="text-xs text-gray-300">{page} de {Math.ceil(total / 20)}</span>
-              {page < Math.ceil(total / 20) && (
-                <Link href={buildUrl({ page: String(page + 1) })}
-                  className="text-sm font-medium text-gray-400 hover:text-brand transition-colors">
-                  Próxima →
-                </Link>
-              )}
-            </div>
+              )
+            })
           )}
         </div>
+
+        {/* ── Paginação ── */}
+        {total > 20 && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
+            {page > 1 ? (
+              <Link href={buildUrl({ page: String(page - 1) })}
+                style={{ fontSize: 13, fontWeight: 600, color: TEAL, textDecoration: 'none' }}>
+                ← Anterior
+              </Link>
+            ) : <span />}
+            <span style={{ fontSize: 12, color: MUTED }}>{page} de {Math.ceil(total / 20)}</span>
+            {page < Math.ceil(total / 20) && (
+              <Link href={buildUrl({ page: String(page + 1) })}
+                style={{ fontSize: 13, fontWeight: 600, color: TEAL, textDecoration: 'none' }}>
+                Próxima →
+              </Link>
+            )}
+          </div>
+        )}
+
       </div>
     </PageLayout>
   )
