@@ -8,22 +8,63 @@ import { useAuth } from '@/contexts/auth-context'
 import { createSchedule } from '@/lib/api/schedules'
 import { GENDER_TYPE_OPTIONS, MATCH_TYPE_OPTIONS, SPORT_OPTIONS, TEAM_SPORTS, defaultMaxPlayers } from '@/lib/sports'
 import { GenderType, MatchType, Sport } from '@rank-app/shared'
-
-const SCHEDULE_CREATE_REWARD = 10 // BOLETAS_REWARDS.SCHEDULE_CREATE
 import { PageLayout } from '@/components/layout/page-layout'
-import { ArrowLeft, Coins, ChevronDown, ChevronUp, Banknote, X } from 'lucide-react'
+import { ArrowLeft, Coins, ChevronDown, ChevronUp, Banknote, X, MapPin, Calendar, Clock, Users, FileText, AlignLeft } from 'lucide-react'
 
-const inputCls = 'w-full border border-gray-200 rounded-lg px-3.5 py-2.5 text-sm text-gray-800 focus:outline-none focus:border-brand transition-colors bg-white'
-const labelCls = 'block text-sm text-gray-500 mb-1.5'
+const SCHEDULE_CREATE_REWARD = 10
+
+const TEAL   = '#00BFA5'
+const SURF   = '#161B22'
+const SURF2  = '#1C2333'
+const BORDER = '#30363D'
+const MUTED  = '#8B949E'
 
 const COST_ITEMS = [
-  { id: 'locacao',     label: 'Locação do espaço' },
-  { id: 'arbitragem',  label: 'Arbitragem' },
-  { id: 'catador',     label: 'Catador de bolas' },
-  { id: 'iluminacao',  label: 'Iluminação' },
-  { id: 'alimentacao', label: 'Alimentação/hidratação' },
-  { id: 'outros',      label: 'Outros' },
+  { id: 'locacao',     label: 'Locação do espaço'    },
+  { id: 'arbitragem',  label: 'Arbitragem'            },
+  { id: 'catador',     label: 'Catador de bolas'      },
+  { id: 'iluminacao',  label: 'Iluminação'            },
+  { id: 'alimentacao', label: 'Alimentação/hidratação'},
+  { id: 'outros',      label: 'Outros'                },
 ]
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', background: SURF2, border: `1px solid ${BORDER}`, borderRadius: 10,
+  padding: '12px 14px', fontSize: 14, color: '#E6EDF3', outline: 'none',
+  boxSizing: 'border-box', transition: 'border-color .15s',
+}
+
+const selectStyle: React.CSSProperties = {
+  ...inputStyle, appearance: 'none', cursor: 'pointer', paddingRight: 36,
+}
+
+const labelStyle: React.CSSProperties = {
+  display: 'block', fontSize: 13, fontWeight: 600, color: '#C9D1D9', marginBottom: 6,
+}
+
+function Field({ label, required, children, hint }: {
+  label: string; required?: boolean; children: React.ReactNode; hint?: string
+}) {
+  return (
+    <div>
+      <label style={labelStyle}>
+        {label}{' '}
+        {required && <span style={{ color: '#F87171' }}>*</span>}
+      </label>
+      {children}
+      {hint && <p style={{ fontSize: 11, color: MUTED, marginTop: 5 }}>{hint}</p>}
+    </div>
+  )
+}
+
+function SelectWrap({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <div style={{ position: 'relative', ...style }}>
+      {children}
+      <ChevronDown size={13} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: MUTED, pointerEvents: 'none' }} />
+    </div>
+  )
+}
 
 export default function NewSchedulePage() {
   const { token, isAuthenticated, player } = useAuth()
@@ -42,39 +83,33 @@ export default function NewSchedulePage() {
     maxPlayers: 2,
   })
 
-  // Cost-sharing state (optional section)
-  const [hasCost, setHasCost]                 = useState(false)
-  const [costPerPlayer, setCostPerPlayer]     = useState<string>('')
-  const [pixKey, setPixKey]                   = useState('')
-  const [selectedItems, setSelectedItems]     = useState<Set<string>>(new Set())
-  const [costOtherText, setCostOtherText]     = useState('')
+  const [hasCost, setHasCost]             = useState(false)
+  const [costPerPlayer, setCostPerPlayer] = useState<string>('')
+  const [pixKey, setPixKey]               = useState('')
+  const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
+  const [costOtherText, setCostOtherText] = useState('')
   const [costSectionOpen, setCostSectionOpen] = useState(false)
-
   const [error, setError]   = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     if (!isAuthenticated) router.push('/login')
     if (player?.sport) {
-      setForm((f) => ({
+      setForm(f => ({
         ...f,
-        sport: player.sport as Sport,
-        city: player.city ?? f.city,
+        sport:    player.sport as Sport,
+        city:     player.city ?? f.city,
         matchType: TEAM_SPORTS.has(player.sport as Sport) ? MatchType.TEAM : MatchType.INDIVIDUAL,
       }))
     }
   }, [isAuthenticated, router, player])
 
   useEffect(() => {
-    setForm((f) => ({ ...f, maxPlayers: defaultMaxPlayers(f.sport, f.matchType) }))
+    setForm(f => ({ ...f, maxPlayers: defaultMaxPlayers(f.sport, f.matchType) }))
   }, [form.sport, form.matchType])
 
   function handleSportChange(sport: Sport) {
-    setForm((f) => ({
-      ...f,
-      sport,
-      matchType: TEAM_SPORTS.has(sport) ? MatchType.TEAM : MatchType.INDIVIDUAL,
-    }))
+    setForm(f => ({ ...f, sport, matchType: TEAM_SPORTS.has(sport) ? MatchType.TEAM : MatchType.INDIVIDUAL }))
   }
 
   function toggleCostItem(id: string) {
@@ -89,9 +124,7 @@ export default function NewSchedulePage() {
     const labels = COST_ITEMS
       .filter(i => selectedItems.has(i.id) && i.id !== 'outros')
       .map(i => i.label)
-    if (selectedItems.has('outros') && costOtherText.trim()) {
-      labels.push(costOtherText.trim())
-    }
+    if (selectedItems.has('outros') && costOtherText.trim()) labels.push(costOtherText.trim())
     return labels.join(', ')
   }
 
@@ -99,289 +132,254 @@ export default function NewSchedulePage() {
     e.preventDefault()
     if (!token) return
     if (hasCost && (!costPerPlayer || Number(costPerPlayer) <= 0)) {
-      setError('Informe o valor do custeio por jogador')
-      return
+      setError('Informe o valor do custeio por jogador'); return
     }
     if (hasCost && !pixKey.trim()) {
-      setError('Informe a chave PIX para receber o custeio')
-      return
+      setError('Informe a chave PIX para receber o custeio'); return
     }
-    setError('')
-    setLoading(true)
+    setError(''); setLoading(true)
     try {
       const payload: Record<string, unknown> = { ...form }
       if (hasCost) {
-        payload.costPerPlayer  = Number(costPerPlayer)
-        payload.pixKey         = pixKey.trim()
+        payload.costPerPlayer   = Number(costPerPlayer)
+        payload.pixKey          = pixKey.trim()
         payload.costDescription = buildCostDescription() || undefined
       }
       const schedule = await createSchedule(token, payload)
       router.push(`/schedule/${schedule._id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao criar agendamento')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
 
   const today = new Date().toISOString().split('T')[0]
 
   return (
     <PageLayout>
-      <main className="max-w-xl mx-auto px-6 py-8">
+      <div style={{ flex: 1, background: '#0D1117', minHeight: '100vh', padding: '32px 40px', maxWidth: 680, width: '100%' }}>
 
-        <Link href="/schedule"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-brand transition-colors mb-6">
-          <ArrowLeft size={14} /> Voltar
+        {/* Back */}
+        <Link href="/schedule" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: MUTED, textDecoration: 'none', marginBottom: 24, fontWeight: 500 }}>
+          <ArrowLeft size={14} /> Voltar para Partidas
         </Link>
 
-        <div className="mb-6">
-          <p className="text-xs text-gray-400 mb-1">Agenda</p>
-          <h1 className="text-xl font-bold text-gray-900">Criar partida</h1>
-        </div>
+        {/* Title */}
+        <h1 style={{ fontSize: 32, fontWeight: 900, color: '#E6EDF3', margin: '0 0 24px', letterSpacing: '-0.02em' }}>
+          Criar Partida
+        </h1>
 
         {/* Boletas incentive */}
-        <div className="flex items-center gap-3 bg-yellow-50 border border-yellow-200 rounded-xl px-4 py-3 mb-4">
-          <div className="w-9 h-9 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
-            <Coins size={18} className="text-yellow-500" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: `${TEAL}12`, border: `1px solid ${TEAL}30`, borderRadius: 12, padding: '12px 16px', marginBottom: 24 }}>
+          <div style={{ width: 36, height: 36, borderRadius: '50%', background: `${TEAL}20`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <Coins size={18} style={{ color: TEAL }} />
           </div>
           <div>
-            <p className="text-sm font-bold text-yellow-800">
+            <p style={{ fontSize: 13, fontWeight: 700, color: TEAL, margin: '0 0 2px' }}>
               +{SCHEDULE_CREATE_REWARD} boletas ao criar uma partida!
             </p>
-            <p className="text-xs text-yellow-600 mt-0.5">
+            <p style={{ fontSize: 12, color: `${TEAL}99`, margin: 0 }}>
               Tome a iniciativa e ganhe boletas para apostar.
             </p>
           </div>
         </div>
 
-        <div className="border border-gray-100 rounded-xl p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Form card */}
+        <div style={{ background: SURF, border: `1px solid ${BORDER}`, borderRadius: 16, padding: '28px 28px', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-            {/* Sport restriction note */}
-            {player?.sport && (
-              <div className="bg-brand/5 border border-brand/10 rounded-lg px-4 py-3 text-xs text-brand/70">
-                Você só pode criar partidas de{' '}
-                <strong>{SPORT_OPTIONS.find(o => o.value === player.sport)?.label ?? player.sport}</strong>,
-                conforme seu esporte cadastrado.
-              </div>
-            )}
+          {/* Sport restriction note */}
+          {player?.sport && (
+            <div style={{ background: `${TEAL}0D`, border: `1px solid ${TEAL}25`, borderRadius: 8, padding: '10px 14px', fontSize: 12, color: `${TEAL}CC` }}>
+              Você só pode criar partidas de{' '}
+              <strong style={{ color: TEAL }}>{SPORT_OPTIONS.find(o => o.value === player.sport)?.label ?? player.sport}</strong>,
+              conforme seu esporte cadastrado.
+            </div>
+          )}
 
-            <div className="grid grid-cols-3 gap-3">
-              <div>
-                <label className={labelCls}>Esporte</label>
-                <select required value={form.sport}
-                  disabled={!!player?.sport}
-                  onChange={(e) => handleSportChange(e.target.value as Sport)}
-                  className={`${inputCls} ${player?.sport ? 'opacity-60 cursor-not-allowed bg-gray-50' : ''}`}>
-                  {SPORT_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Formato</label>
-                <select required value={form.matchType}
-                  onChange={(e) => setForm((f) => ({ ...f, matchType: e.target.value as MatchType }))}
-                  className={inputCls}>
-                  {MATCH_TYPE_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className={labelCls}>Gênero</label>
-                <select required value={form.genderType}
-                  onChange={(e) => setForm((f) => ({ ...f, genderType: e.target.value as GenderType }))}
-                  className={inputCls}>
-                  {GENDER_TYPE_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
-                </select>
-              </div>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+
+            {/* Sport / Format / Gender */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+              <Field label="Esporte">
+                <SelectWrap>
+                  <select required value={form.sport}
+                    disabled={!!player?.sport}
+                    onChange={e => handleSportChange(e.target.value as Sport)}
+                    style={{ ...selectStyle, opacity: player?.sport ? 0.5 : 1, cursor: player?.sport ? 'not-allowed' : 'pointer' }}>
+                    {SPORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </SelectWrap>
+              </Field>
+              <Field label="Formato">
+                <SelectWrap>
+                  <select required value={form.matchType}
+                    onChange={e => setForm(f => ({ ...f, matchType: e.target.value as MatchType }))}
+                    style={selectStyle}>
+                    {MATCH_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </SelectWrap>
+              </Field>
+              <Field label="Gênero">
+                <SelectWrap>
+                  <select required value={form.genderType}
+                    onChange={e => setForm(f => ({ ...f, genderType: e.target.value as GenderType }))}
+                    style={selectStyle}>
+                    {GENDER_TYPE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
+                </SelectWrap>
+              </Field>
             </div>
 
-            <div>
-              <label className={labelCls}>Título <span className="text-red-400">*</span></label>
-              <input type="text" required placeholder="Ex: Tênis simples sábado manhã"
-                value={form.title}
-                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                className={inputCls} />
+            {/* Title */}
+            <Field label="Título" required>
+              <div style={{ position: 'relative' }}>
+                <FileText size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: MUTED }} />
+                <input type="text" required placeholder="Ex: Tênis simples sábado manhã"
+                  value={form.title}
+                  onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
+                  style={{ ...inputStyle, paddingLeft: 38 }} />
+              </div>
+            </Field>
+
+            {/* Description */}
+            <Field label="Descrição" >
+              <div style={{ position: 'relative' }}>
+                <AlignLeft size={14} style={{ position: 'absolute', left: 13, top: 14, color: MUTED }} />
+                <textarea rows={2} placeholder="Nível exigido, regras, observações..."
+                  value={form.description}
+                  onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
+                  style={{ ...inputStyle, paddingLeft: 38, resize: 'none', lineHeight: 1.5 }} />
+              </div>
+            </Field>
+
+            {/* Date / Time */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 160px', gap: 12 }}>
+              <Field label="Data" required>
+                <div style={{ position: 'relative' }}>
+                  <Calendar size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: MUTED }} />
+                  <input type="date" required min={today} value={form.date}
+                    onChange={e => setForm(f => ({ ...f, date: e.target.value }))}
+                    style={{ ...inputStyle, paddingLeft: 38, colorScheme: 'dark' }} />
+                </div>
+              </Field>
+              <Field label="Horário" required>
+                <div style={{ position: 'relative' }}>
+                  <Clock size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: MUTED }} />
+                  <input type="time" required value={form.time}
+                    onChange={e => setForm(f => ({ ...f, time: e.target.value }))}
+                    style={{ ...inputStyle, paddingLeft: 38, colorScheme: 'dark' }} />
+                </div>
+              </Field>
             </div>
 
-            <div>
-              <label className={labelCls}>
-                Descrição <span className="text-gray-300">(opcional)</span>
-              </label>
-              <textarea rows={2} placeholder="Nível exigido, regras, observações..."
-                value={form.description}
-                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                className={`${inputCls} resize-none`} />
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="col-span-2">
-                <label className={labelCls}>Data <span className="text-red-400">*</span></label>
-                <input type="date" required min={today} value={form.date}
-                  onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
-                  className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Horário <span className="text-red-400">*</span></label>
-                <input type="time" required value={form.time}
-                  onChange={(e) => setForm((f) => ({ ...f, time: e.target.value }))}
-                  className={inputCls} />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className={labelCls}>Local <span className="text-red-400">*</span></label>
-                <input type="text" required placeholder="Quadra, complexo, praia..."
-                  value={form.location}
-                  onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
-                  className={inputCls} />
-              </div>
-              <div>
-                <label className={labelCls}>Cidade <span className="text-red-400">*</span></label>
+            {/* Location / City */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <Field label="Local" required>
+                <div style={{ position: 'relative' }}>
+                  <MapPin size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: MUTED }} />
+                  <input type="text" required placeholder="Quadra, complexo, praia..."
+                    value={form.location}
+                    onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
+                    style={{ ...inputStyle, paddingLeft: 38 }} />
+                </div>
+              </Field>
+              <Field label="Cidade" required>
                 <input type="text" required value={form.city}
-                  onChange={(e) => setForm((f) => ({ ...f, city: e.target.value }))}
-                  className={inputCls} />
+                  onChange={e => setForm(f => ({ ...f, city: e.target.value }))}
+                  style={inputStyle} />
+              </Field>
+            </div>
+
+            {/* Max players */}
+            <Field label="Máx. participantes" hint="Você já conta como 1 participante">
+              <div style={{ position: 'relative' }}>
+                <Users size={14} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: MUTED }} />
+                <input type="number" required min={2} max={50} value={form.maxPlayers}
+                  onChange={e => setForm(f => ({ ...f, maxPlayers: Number(e.target.value) }))}
+                  style={{ ...inputStyle, paddingLeft: 38 }} />
               </div>
-            </div>
+            </Field>
 
-            <div>
-              <label className={labelCls}>Máx. participantes</label>
-              <input type="number" required min={2} max={50} value={form.maxPlayers}
-                onChange={(e) => setForm((f) => ({ ...f, maxPlayers: Number(e.target.value) }))}
-                className={inputCls} />
-              <p className="text-xs text-gray-300 mt-1">Você já conta como 1 participante</p>
-            </div>
-
-            {/* ── Custeio compartilhado ── */}
-            <div className="border border-gray-100 rounded-lg overflow-hidden">
-              {/* Toggle header */}
-              <button
-                type="button"
+            {/* Cost sharing toggle */}
+            <div style={{ border: `1px solid ${BORDER}`, borderRadius: 10, overflow: 'hidden' }}>
+              <button type="button"
                 onClick={() => {
                   if (!hasCost) { setHasCost(true); setCostSectionOpen(true) }
                   else setCostSectionOpen(o => !o)
                 }}
-                className="w-full flex items-center justify-between px-4 py-3 bg-gray-50 hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center gap-2.5">
-                  <Banknote size={15} className={hasCost ? 'text-green-600' : 'text-gray-400'} />
-                  <span className={`text-sm font-medium ${hasCost ? 'text-gray-900' : 'text-gray-500'}`}>
-                    {hasCost
-                      ? `Custeio: R$ ${costPerPlayer || '—'} por jogador`
-                      : 'Adicionar custeio compartilhado'}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px', background: SURF2, border: 'none', cursor: 'pointer' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Banknote size={15} style={{ color: hasCost ? '#22C55E' : MUTED }} />
+                  <span style={{ fontSize: 13, fontWeight: 500, color: hasCost ? '#E6EDF3' : MUTED }}>
+                    {hasCost ? `Custeio: R$ ${costPerPlayer || '—'} por jogador` : 'Adicionar custeio compartilhado'}
                   </span>
-                  {!hasCost && (
-                    <span className="text-xs text-gray-400">(opcional)</span>
-                  )}
+                  {!hasCost && <span style={{ fontSize: 12, color: '#4A5A6A' }}>(opcional)</span>}
                 </div>
-                <div className="flex items-center gap-2">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {hasCost && (
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setHasCost(false); setCostSectionOpen(false) }}
-                      className="text-gray-300 hover:text-red-400 transition-colors p-0.5"
-                      title="Remover custeio"
-                    >
+                    <button type="button"
+                      onClick={e => { e.stopPropagation(); setHasCost(false); setCostSectionOpen(false) }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: MUTED, display: 'flex', padding: 2 }}>
                       <X size={13} />
                     </button>
                   )}
                   {costSectionOpen
-                    ? <ChevronUp size={14} className="text-gray-400" />
-                    : <ChevronDown size={14} className="text-gray-400" />}
+                    ? <ChevronUp size={14} style={{ color: MUTED }} />
+                    : <ChevronDown size={14} style={{ color: MUTED }} />}
                 </div>
               </button>
 
-              {/* Cost fields */}
               {hasCost && costSectionOpen && (
-                <div className="px-4 py-4 space-y-4 border-t border-gray-100">
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className={labelCls}>
-                        Valor por jogador <span className="text-red-400">*</span>
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm text-gray-400 font-medium">R$</span>
-                        <input
-                          type="number"
-                          min={1}
-                          max={10000}
-                          step={0.01}
-                          placeholder="0,00"
+                <div style={{ padding: '18px 16px', borderTop: `1px solid ${BORDER}`, display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                    <Field label="Valor por jogador" required>
+                      <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: MUTED, fontWeight: 600 }}>R$</span>
+                        <input type="number" min={1} max={10000} step={0.01} placeholder="0,00"
                           value={costPerPlayer}
                           onChange={e => setCostPerPlayer(e.target.value)}
-                          className={`${inputCls} pl-9`}
-                        />
+                          style={{ ...inputStyle, paddingLeft: 38 }} />
                       </div>
-                    </div>
-                    <div>
-                      <label className={labelCls}>
-                        Chave PIX <span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="CPF, e-mail, celular ou chave"
+                    </Field>
+                    <Field label="Chave PIX" required>
+                      <input type="text" placeholder="CPF, e-mail, celular ou chave"
                         value={pixKey}
                         onChange={e => setPixKey(e.target.value)}
-                        className={inputCls}
-                      />
-                    </div>
+                        style={inputStyle} />
+                    </Field>
                   </div>
 
                   <div>
-                    <label className={labelCls}>
-                      Destinação dos recursos{' '}
-                      <span className="text-gray-300">(opcional)</span>
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <p style={{ ...labelStyle, marginBottom: 10 }}>
+                      Destinação dos recursos <span style={{ color: MUTED, fontWeight: 400 }}>(opcional)</span>
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                       {COST_ITEMS.map(item => (
-                        <label
-                          key={item.id}
-                          className={`flex items-center gap-2.5 px-3 py-2.5 border rounded-lg cursor-pointer transition-colors text-sm ${
-                            selectedItems.has(item.id)
-                              ? 'border-brand/40 bg-brand/5 text-brand font-medium'
-                              : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                          }`}
-                        >
-                          <input
-                            type="checkbox"
-                            className="sr-only"
+                        <label key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', border: `1px solid ${selectedItems.has(item.id) ? TEAL + '60' : BORDER}`, borderRadius: 8, cursor: 'pointer', background: selectedItems.has(item.id) ? `${TEAL}10` : 'transparent', transition: 'all .15s' }}>
+                          <input type="checkbox" className="sr-only"
                             checked={selectedItems.has(item.id)}
-                            onChange={() => toggleCostItem(item.id)}
-                          />
-                          <span className={`w-3.5 h-3.5 rounded border-2 flex items-center justify-center shrink-0 ${
-                            selectedItems.has(item.id) ? 'border-brand bg-brand' : 'border-gray-300'
-                          }`}>
+                            onChange={() => toggleCostItem(item.id)} />
+                          <span style={{ width: 14, height: 14, borderRadius: 4, border: `2px solid ${selectedItems.has(item.id) ? TEAL : BORDER}`, background: selectedItems.has(item.id) ? TEAL : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                             {selectedItems.has(item.id) && (
-                              <svg viewBox="0 0 8 6" fill="none" className="w-2 h-2">
-                                <path d="M1 3l2 2 4-4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                              <svg viewBox="0 0 8 6" fill="none" style={{ width: 8, height: 8 }}>
+                                <path d="M1 3l2 2 4-4" stroke="#0D1117" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                               </svg>
                             )}
                           </span>
-                          {item.label}
+                          <span style={{ fontSize: 12, color: selectedItems.has(item.id) ? TEAL : '#C9D1D9', fontWeight: selectedItems.has(item.id) ? 600 : 400 }}>{item.label}</span>
                         </label>
                       ))}
                     </div>
                     {selectedItems.has('outros') && (
-                      <input
-                        type="text"
-                        placeholder="Especifique..."
+                      <input type="text" placeholder="Especifique..."
                         value={costOtherText}
                         onChange={e => setCostOtherText(e.target.value)}
-                        className={`${inputCls} mt-2`}
-                      />
+                        style={{ ...inputStyle, marginTop: 8 }} />
                     )}
                   </div>
 
-                  <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2.5">
-                    <Banknote size={13} className="text-blue-400 mt-0.5 shrink-0" />
-                    <p className="text-xs text-blue-600 leading-relaxed">
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, background: '#0D2340', border: '1px solid #1E4080', borderRadius: 8, padding: '10px 12px' }}>
+                    <Banknote size={13} style={{ color: '#60A5FA', marginTop: 1, flexShrink: 0 }} />
+                    <p style={{ fontSize: 11, color: '#93C5FD', lineHeight: 1.5, margin: 0 }}>
                       Os participantes verão o valor e a chave PIX ao acessar a partida. O pagamento é feito diretamente entre os jogadores — o app não processa transações.
                     </p>
                   </div>
@@ -389,23 +387,37 @@ export default function NewSchedulePage() {
               )}
             </div>
 
+            {/* Error */}
             {error && (
-              <p className="text-red-500 text-sm bg-red-50 rounded-lg px-3 py-2">{error}</p>
+              <div style={{ background: '#F8717115', border: '1px solid #F8717130', borderRadius: 8, padding: '10px 14px' }}>
+                <p style={{ fontSize: 13, color: '#F87171', margin: 0 }}>{error}</p>
+              </div>
             )}
 
-            <div className="flex gap-3 pt-1">
-              <Link href="/schedule"
-                className="flex-1 border border-gray-200 text-gray-500 text-sm font-medium py-2.5 rounded-lg text-center hover:bg-gray-50 transition-colors">
+            {/* Actions */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, paddingTop: 4 }}>
+              <Link href="/schedule" style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: 'transparent', border: `1px solid ${BORDER}`,
+                color: '#C9D1D9', fontSize: 14, fontWeight: 700,
+                padding: '13px', borderRadius: 10, textDecoration: 'none',
+                transition: 'border-color .15s',
+              }}>
                 Cancelar
               </Link>
-              <button type="submit" disabled={loading}
-                className="flex-1 bg-brand text-white text-sm font-medium py-2.5 rounded-lg hover:bg-brand-dark disabled:opacity-50 transition-colors">
+              <button type="submit" disabled={loading} style={{
+                background: TEAL, border: 'none', color: '#0D1117',
+                fontSize: 14, fontWeight: 700, padding: '13px',
+                borderRadius: 10, cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.7 : 1, transition: 'opacity .15s',
+              }}>
                 {loading ? 'Criando...' : 'Criar partida'}
               </button>
             </div>
+
           </form>
         </div>
-      </main>
+      </div>
     </PageLayout>
   )
 }

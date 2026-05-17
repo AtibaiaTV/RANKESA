@@ -5,6 +5,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
   MinLength,
 } from 'class-validator'
 import { Gender, PlayerLevel, Sport } from '@rank-app/shared'
@@ -27,6 +28,11 @@ export class RegisterDto {
   @IsString()
   @IsNotEmpty()
   city: string
+
+  @IsString()
+  @IsNotEmpty()
+  @Matches(/^\+?[\d\s\-().]{8,20}$/, { message: 'Número de WhatsApp inválido' })
+  phone: string
 
   @IsEnum(PlayerLevel)
   @IsOptional()

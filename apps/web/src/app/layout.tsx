@@ -6,14 +6,14 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'RANK',
+  title: 'RANKESA',
   description: 'Jogue, Conecte, Evolua. Ranking esportivo da sua cidade.',
   manifest: '/manifest.json',
-  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'RANK' },
+  appleWebApp: { capable: true, statusBarStyle: 'default', title: 'RANKESA' },
 }
 
 export const viewport: Viewport = {
-  themeColor: '#2E1A8E',
+  themeColor: '#0D1117',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -18,6 +18,7 @@ export function register(data: {
   email: string
   password: string
   city: string
+  phone: string
   sport?: string
   level?: string
   gender?: string
